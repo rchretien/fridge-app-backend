@@ -23,6 +23,8 @@ gunicorn = ">=21.2.0"
 poethepoet = ">=0.25.0"
 python = ">=3.12,<4.0"
 uvicorn = { extras = ["standard"], version = ">=0.29.0" }
+pytz = "^2024.2"
+sqlalchemy = "^2.0.36"
 
 [tool.poetry.group.test.dependencies]  # https://python-poetry.org/docs/master/managing-dependencies/
 commitizen = ">=3.21.3"
@@ -115,7 +117,7 @@ convention = "numpy"
         --host $host \
         --port $port \
         --reload \
-        fridge_app_backend.api:app
+        src.fridge_app_backend.api.main:app
     } else {
       gunicorn \
         --access-logfile - \
@@ -127,7 +129,7 @@ convention = "numpy"
         --worker-class uvicorn.workers.UvicornWorker \
         --worker-tmp-dir /dev/shm \
         --workers 2 \
-        fridge_app_backend.api:app
+        src.fridge_app_backend.api.main:app
     } fi
     """
 
