@@ -1,7 +1,9 @@
 """Main entrypoint for the API."""
 
+import logging
 import os
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
+from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
 
@@ -11,11 +13,38 @@ from fastapi.responses import RedirectResponse
 from pytz import timezone
 
 from fridge_app_backend.api.routes.inventory_routes import inventory_router
+from fridge_app_backend.orm.database import initialise_db
 
 API_NAME = "Fridge Inventory App Backend"
 API_DESCRIPTION = "CRUD API for managing a fridge inventory."
 API_VERSION = "0.1.0"
 BRUSSELS_TZ = timezone("Europe/Brussels")
+COMMIT_SHA = os.environ.get("COMMIT", None)
+
+logger = logging.getLogger(__name__)
+logger.info("Running COMMIT", extra={"commit": COMMIT_SHA})
+
+
+logging.basicConfig()
+logging.getLogger("root").setLevel(logging.INFO)
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Initialize and close the database connection."""
+    logger.info("API start up operations...")
+    logger.info("Initializing DB...")
+    initialise_db()
+
+    try:
+        yield  # Yield control to the application
+        logger.info("API shut down operations...")
+
+    finally:
+        # Close the database connection
+        pass
 
 
 app = FastAPI(
@@ -23,6 +52,7 @@ app = FastAPI(
     description=API_DESCRIPTION,
     started=datetime.now(tz=BRUSSELS_TZ),
     version=API_VERSION,
+    lifespan=lifespan,
 )
 
 app.include_router(inventory_router)

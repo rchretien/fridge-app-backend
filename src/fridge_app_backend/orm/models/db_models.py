@@ -1,6 +1,6 @@
 """SQLAlchemy ORM model definitions for the fridge app backend."""
 
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -22,7 +22,7 @@ class ProductCategory(BaseWithID):
 
     __tablename__ = "product_category"
 
-    name = Column(String, unique=True, index=True)
+    name = Column(String, unique=True)
 
 
 class Product(BaseWithID):
@@ -30,8 +30,8 @@ class Product(BaseWithID):
 
     __tablename__ = "product"
 
-    name = Column(String, unique=True, index=True)
-    category_id = Column(Integer, index=True)
+    name = Column(String, unique=True)
+    category_id = Column(Integer)
     description = Column(String)
     quantity = Column(Integer)
     unit = Column(String, default="g")
