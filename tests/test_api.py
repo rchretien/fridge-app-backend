@@ -3,7 +3,7 @@
 import httpx
 from fastapi.testclient import TestClient
 
-from fridge_app_backend.api import app
+from fridge_app_backend.api.main import app
 
 client = TestClient(app)
 

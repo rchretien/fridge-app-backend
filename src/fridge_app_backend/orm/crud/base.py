@@ -41,9 +41,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """Encode a Pydantic model to a SQLAlchemy model."""
         return self.model(**jsonable_encoder(obj_in))
 
-    def get(self, session: Session, row_id: int) -> ModelType:
+    def get(self, session: Session, row_id: int) -> ModelType | None:
         """Get a single model instance by ID."""
-        return session.query(self.model).get(row_id)
+        result: ModelType | None = session.get(self.model, row_id)
+        return result
 
     def get_multi(
         self,
@@ -89,21 +90,19 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             session.refresh(db_obj)
         return db_objs
 
-    def update(
-        self, session: Session, id: int, db_obj: ModelType, obj_in: UpdateSchemaType
-    ) -> ModelType:
+    def update(self, session: Session, row_id: int, obj_in: UpdateSchemaType) -> ModelType:
         """Update an existing database record."""
-        db_obj = session.get(self.model, id)
+        db_obj = session.get(self.model, row_id)
 
         # Check if the object exists
         if db_obj is None:
             raise NoResultFound
 
         # Check if all fields are present in the object
-        update_data = self.encode_update(obj_in, session)
-        for field in update_data:
+        update_data = self.encode_update_model(obj_in, session)
+        for field, value in update_data.__dict__.items():
             if hasattr(db_obj, field):
-                setattr(db_obj, field, update_data[field])
+                setattr(db_obj, field, value)
 
         # Update the object
         session.add(db_obj)

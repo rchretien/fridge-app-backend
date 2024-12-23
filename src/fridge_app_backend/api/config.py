@@ -3,8 +3,8 @@
 import logging
 from pathlib import Path
 
-from fridge_app_backend.exceptions import BadDBTypeError, BadEnvironmentError
 from fridge_app_backend.api.utils import get_env_var
+from fridge_app_backend.exceptions import BadDBTypeError, BadEnvironmentError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

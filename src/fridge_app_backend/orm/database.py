@@ -8,7 +8,13 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 
 from fridge_app_backend.api.config import DB_CONN, DB_CONNECTION_ARGS, DB_TYPE
-from fridge_app_backend.orm.models.db_models import Base
+from fridge_app_backend.orm.models.db_models import (
+    Base,
+    ProductLocation,
+    ProductType,
+    init_product_location_table,
+    init_product_type_table,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,13 +50,12 @@ def initialise_db() -> None:
     # emit CREATE statements given ORM registry
     Base.metadata.create_all(engine)
 
-    # Fill all default tables with initial/default data
-    # with SessionLocal.begin() as session:
-    #     if not session.query(EnumBase).count():
-    #         init_all_enum_tables(session=session)
-    #     if not session.query(UTR).count():
-    #         init_utr_table(session=session)
-    #     init_excluded_restriction_sites_table(session=session)
+    # Fill all default tables with initial/default data if they are empty
+    with SessionLocal.begin() as session:
+        if not session.query(ProductType).count():
+            init_product_type_table(session=session)
+        if not session.query(ProductLocation).count():
+            init_product_location_table(session=session)
 
 
 def reset_db() -> None:
@@ -60,11 +65,10 @@ def reset_db() -> None:
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
 
-    # Fill all default tables with initial/default data
-    # with SessionLocal.begin() as session:
-    #     init_all_enum_tables(session=session)
-    #     init_utr_table(session=session)
-    #     init_excluded_restriction_sites_table(session=session)
+    # Fill all default tables with initial/default data if they are empty
+    with SessionLocal.begin() as session:
+        init_product_location_table(session=session)
+        init_product_type_table(session=session)
 
 
 def get_session() -> Generator[Session, None, None]:
