@@ -1,8 +1,8 @@
-"""CRUD operations for product model."""
+"""CRUD operations for the product model."""
 
 from sqlalchemy.orm import Session
 
-from fridge_app_backend.orm.crud.base import CRUDBase
+from fridge_app_backend.orm.crud.base_crud import CRUDBase
 from fridge_app_backend.orm.models.db_models import Product, ProductLocation, ProductType
 from fridge_app_backend.orm.schemas.product_schemas import ProductCreate, ProductUpdate
 
