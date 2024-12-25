@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-from fridge_app_backend.orm.config import LOCATION_LIST_FILE_PATH, PRODUCT_TYPE_LIST_FILE_PATH
+from fridge_app_backend.config import LOCATION_LIST_FILE_PATH, PRODUCT_TYPE_LIST_FILE_PATH
 
 
 class Base(DeclarativeBase):
@@ -61,6 +61,7 @@ class Product(BaseWithID):
     )
     added_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     expiration_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    image_location: Mapped[str] = mapped_column(String, nullable=True)
 
     # Relationship with the ProductType model (many-to-one)
     product_type_id: Mapped[int] = mapped_column(

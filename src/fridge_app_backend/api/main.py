@@ -10,16 +10,16 @@ from typing import Any
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from pytz import timezone
 
 from fridge_app_backend.api.routes.inventory_routes import inventory_router
+from fridge_app_backend.config import (
+    API_DESCRIPTION,
+    API_NAME,
+    API_VERSION,
+    BRUSSELS_TZ,
+    COMMIT_SHA,
+)
 from fridge_app_backend.orm.database import initialise_db
-
-API_NAME = "Fridge Inventory App Backend"
-API_DESCRIPTION = "CRUD API for managing a fridge inventory."
-API_VERSION = "0.1.0"
-BRUSSELS_TZ = timezone("Europe/Brussels")
-COMMIT_SHA = os.environ.get("COMMIT", None)
 
 logger = logging.getLogger(__name__)
 logger.info("Running COMMIT", extra={"commit": COMMIT_SHA})

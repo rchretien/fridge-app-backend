@@ -1,7 +1,10 @@
 """Module containing API configuration variables."""
 
 import logging
+import os
 from pathlib import Path
+
+from pytz import timezone
 
 from fridge_app_backend.api.utils import get_env_var
 from fridge_app_backend.exceptions import BadDBTypeError, BadEnvironmentError
@@ -9,6 +12,19 @@ from fridge_app_backend.exceptions import BadDBTypeError, BadEnvironmentError
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+# API specic variables
+API_NAME = "Fridge Inventory App Backend"
+API_DESCRIPTION = "CRUD API for managing a fridge inventory."
+API_VERSION = "0.1.0"
+BRUSSELS_TZ = timezone("Europe/Brussels")
+COMMIT_SHA = os.environ.get("COMMIT", None)
+
+# Configuration variables for the ORM
+ROOT_DIR = Path(__file__).resolve().parent
+LOCATION_LIST_FILE_PATH = ROOT_DIR / "data/location_list.json"
+PRODUCT_TYPE_LIST_FILE_PATH = ROOT_DIR / "data/product_type_list.json"
+
+# Environment specic variables
 AVAILABLE_ENVIRONMENTS = {"dev", "prod"}
 DEPLOYED_ENVIRONMENTS = {"prod"}
 ENVIRONMENT = get_env_var("FRIDGE_APP_ENVIRONMENT", "dev")

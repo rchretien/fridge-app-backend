@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 
-from fridge_app_backend.api.config import DB_CONN, DB_CONNECTION_ARGS, DB_TYPE
+from fridge_app_backend.config import DB_CONN, DB_CONNECTION_ARGS, DB_TYPE
 from fridge_app_backend.orm.models.db_models import (
     Base,
     ProductLocation,
