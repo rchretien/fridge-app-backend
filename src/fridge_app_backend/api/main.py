@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from fridge_app_backend.api.routes.inventory_routes import inventory_router
+from fridge_app_backend.api.routes.utils_routes import utils_router
 from fridge_app_backend.config import (
     API_DESCRIPTION,
     API_NAME,
@@ -35,7 +36,7 @@ logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Initialize and close the database connection."""
     logger.info("API start up operations...")
-    logger.info("Initializing DB...")
+    logger.info("Initialising DB...")
     initialise_db()
 
     try:
@@ -56,6 +57,7 @@ app = FastAPI(
 )
 
 app.include_router(inventory_router)
+app.include_router(utils_router)
 
 
 @app.middleware("http")

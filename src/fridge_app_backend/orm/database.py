@@ -39,6 +39,8 @@ else:
         poolclass=NullPool,
     )
 
+engine = create_engine("sqlite:///:memory:", echo=True, connect_args={"check_same_thread": False})
+
 
 # We name it SessionLocal to distinguish it from the Session we are importing from SQLAlchemy.
 SessionLocal = sessionmaker(bind=engine)

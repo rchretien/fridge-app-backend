@@ -19,7 +19,7 @@ class BaseWithID(Base):
     __abstract__ = True
 
     # ID field used as primary key
-    id = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
 
 class ProductType(BaseWithID):

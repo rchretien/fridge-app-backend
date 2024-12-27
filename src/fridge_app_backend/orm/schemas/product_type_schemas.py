@@ -1,6 +1,10 @@
 """Data models for product type."""
 
+from typing import Self
+
 from pydantic import BaseModel, Field
+
+from fridge_app_backend.orm.models.db_models import ProductType
 
 
 class ProductTypeBase(BaseModel):
@@ -27,21 +31,29 @@ class ProductTypeRead(ProductTypeBase):
 
         orm_mode = True
 
+    @classmethod
+    def from_model(cls, product_type: ProductType) -> Self:
+        """Create a ProductTypeRead instance from a ProductType model instance."""
+        return cls(id=product_type.id, name=product_type.name)
+
 
 class ProductTypeReadList(BaseModel):
     """Read product type list."""
 
-    product_types: list[ProductTypeRead] = Field(
+    product_type_list: list[ProductTypeRead] = Field(
         ..., title="Product types", description="Product type list"
-    )
-    next_skip: int = Field(
-        ..., title="Next skip", ge=0, description="Database index of the last item retrieved"
-    )
-    total_items: int = Field(
-        ..., title="Total items", ge=0, description="Total number of items in the database"
     )
 
     class Config:
         """Pydantic configuration."""
 
         orm_mode = True
+
+    @classmethod
+    def from_db_product_type_list(cls, product_type_list: list[ProductType]) -> Self:
+        """Create a ProductTypeReadList instance from a list of ProductTypeRead instances."""
+        return cls(
+            product_type_list=[
+                ProductTypeRead.from_model(product_type) for product_type in product_type_list
+            ]
+        )
