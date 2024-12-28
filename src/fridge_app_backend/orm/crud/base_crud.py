@@ -73,6 +73,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         return list(session.scalars(base_statement).all())
 
+    def get_all(self, session: Session) -> list[ModelType]:
+        """Get all model instances."""
+        return session.query(self.model).all()
+
     def create(self, session: Session, obj_in: CreateSchemaType) -> ModelType:
         """Create a new database record."""
         db_obj = self.encode_model(obj_in, session)

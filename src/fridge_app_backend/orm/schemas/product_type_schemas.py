@@ -51,7 +51,7 @@ class ProductTypeReadList(BaseModel):
 
     @classmethod
     def from_db_product_type_list(cls, product_type_list: list[ProductType]) -> Self:
-        """Create a ProductTypeReadList instance from a list of ProductTypeRead instances."""
+        """Create a ProductTypeReadList instance from a list of ProductTypeRead."""
         return cls(
             product_type_list=[
                 ProductTypeRead.from_model(product_type) for product_type in product_type_list
