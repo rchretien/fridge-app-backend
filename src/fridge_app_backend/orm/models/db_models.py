@@ -50,7 +50,7 @@ class Product(BaseWithID):
     __tablename__ = "product"
 
     # Define columns
-    name: Mapped[str] = mapped_column(String, unique=True)
+    name: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
     quantity: Mapped[int] = mapped_column(Integer, CheckConstraint("quantity >= 1"))
     unit: Mapped[str] = mapped_column(

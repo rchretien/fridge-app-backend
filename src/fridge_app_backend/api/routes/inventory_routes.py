@@ -1,6 +1,16 @@
 """Endpoints for interacting with the fridge inventory."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from starlette.status import HTTP_201_CREATED
+
+from fridge_app_backend.orm.crud.product_crud import product_crud
+from fridge_app_backend.orm.database import get_session
+from fridge_app_backend.orm.schemas.product_schemas import (
+    CreatedProduct,
+    ProductCreate,
+    ProductReadList,
+)
 
 inventory_router = APIRouter(
     prefix="/inventory",
@@ -8,16 +18,24 @@ inventory_router = APIRouter(
 )
 
 
-@inventory_router.post("/create")
-async def create_product() -> dict[str, str]:
+@inventory_router.post(
+    "/create",
+    response_model=CreatedProduct,
+    responses={HTTP_201_CREATED: {"model": CreatedProduct}},
+    status_code=HTTP_201_CREATED,
+)
+async def create_product(
+    create_product_in: ProductCreate,
+    session: Session = Depends(get_session),  # noqa: B008
+) -> CreatedProduct:
     """Create a new product."""
-    return {"message": "Create a new product"}
+    return CreatedProduct.from_model(product_crud.create(session, obj_in=create_product_in))
 
 
-@inventory_router.get("/list")
-async def get_product_list() -> dict[str, str]:
+@inventory_router.get("/list", response_model=ProductReadList)
+async def get_product_list() -> ProductReadList:
     """Get all products."""
-    return {"message": "Get all products"}
+    return ...
 
 
 @inventory_router.patch("/update")
