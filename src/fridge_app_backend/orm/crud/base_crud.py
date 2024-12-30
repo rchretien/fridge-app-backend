@@ -1,5 +1,6 @@
 """Base class for CRUD operations."""
 
+from dataclasses import dataclass
 from typing import Generic, TypeVar
 
 from fastapi.encoders import jsonable_encoder
@@ -7,6 +8,8 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.sql.elements import ColumnElement
+from sqlalchemy.sql.functions import func
 
 from fridge_app_backend.exceptions import ModelNotHavingAttributeError
 from fridge_app_backend.orm.enums.base_enums import OrderByEnum
@@ -15,6 +18,16 @@ from fridge_app_backend.orm.models.db_models import BaseWithID
 ModelType = TypeVar("ModelType", bound=BaseWithID)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+
+
+@dataclass
+class PaginatedResponse(Generic[ModelType]):
+    """Paginated response schema."""
+
+    data: list[ModelType]
+    total: int
+    offset: int
+    limit: int
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
@@ -46,18 +59,29 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         result: ModelType | None = session.get(self.model, row_id)
         return result
 
-    def get_multi(
+    def get_multi_paginated(
         self,
         session: Session,
-        skip: int = 0,
+        offset: int = 0,
         limit: int = 100,
         *,
         ascending: bool = False,
         order_by: OrderByEnum = OrderByEnum.ID,
-    ) -> list[ModelType]:
+    ) -> PaginatedResponse[ModelType]:
         """Get multiple model instances."""
-        if not hasattr(self.model, order_by.value):
-            raise ModelNotHavingAttributeError(model=self.model, attribute=order_by.value)
+
+        # Nested function encapsulating the order_by expression definition
+        def _get_order_by_expression() -> ColumnElement[bool]:
+            """Get the order by expression."""
+            if not hasattr(self.model, order_by.value):
+                raise ModelNotHavingAttributeError(
+                    model_name=self.model.__name__, attribute=order_by.value
+                )
+            return (  # type: ignore[no-any-return]
+                getattr(self.model, order_by).asc()
+                if ascending
+                else getattr(self.model, order_by).desc()
+            )
 
         # Base query statement
         base_statement = (
@@ -67,11 +91,16 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 if ascending
                 else getattr(self.model, order_by.value).desc()
             )
-            .offset(skip)
+            .offset(offset)
             .limit(limit)
         )
 
-        return list(session.scalars(base_statement).all())
+        return PaginatedResponse(
+            data=list(session.scalars(base_statement).all()),
+            total=session.scalar(select(func.count()).select_from(base_statement.subquery())) or 0,
+            offset=offset,
+            limit=limit,
+        )
 
     def get_all(self, session: Session) -> list[ModelType]:
         """Get all model instances."""

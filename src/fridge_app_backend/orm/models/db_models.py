@@ -59,8 +59,8 @@ class Product(BaseWithID):
         default="g",
         nullable=False,
     )
-    added_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    expiration_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    creation_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    expiry_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     image_location: Mapped[str] = mapped_column(String, nullable=True)
 
     # Relationship with the ProductType model (many-to-one)
@@ -81,7 +81,7 @@ class Product(BaseWithID):
 
     # Adding check constraints spanning several columns to the table
     __table_args__ = (
-        CheckConstraint(sqltext="expiration_date > added_date", name="expiration_date_check"),
+        CheckConstraint(sqltext="expiry_date > creation_date", name="expiry_date_check"),
     )
 
 

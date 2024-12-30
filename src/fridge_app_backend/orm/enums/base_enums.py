@@ -40,5 +40,5 @@ class OrderByEnum(str, Enum):
 
     ID = "id"
     NAME = "name"
-    CREATED_AT = "created_at"
+    CREATION_DATE = "creation_date"
     EXPIRY_DATE = "expiry_date"

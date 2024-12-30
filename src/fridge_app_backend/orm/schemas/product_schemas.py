@@ -7,6 +7,7 @@ from typing import Self
 from pydantic import BaseModel, Field, field_validator
 
 from fridge_app_backend.config import BRUSSELS_TZ
+from fridge_app_backend.orm.crud.base_crud import PaginatedResponse
 from fridge_app_backend.orm.enums.base_enums import (
     ProductLocationEnum,
     ProductTypeEnum,
@@ -32,10 +33,10 @@ class ProductBase(BaseModel):
     unit: ProductUnitEnum = Field(
         ..., title="Product unit", min_length=1, max_length=50, description="Product unit"
     )
-    expiration_date: datetime = Field(
+    expiry_date: datetime = Field(
         ...,
-        title="Product expiration date",
-        description="Product expiration date",
+        title="Product expiry date",
+        description="Product expiry date",
         examples=[datetime.now(tz=BRUSSELS_TZ) + timedelta(hours=1)],
     )
     product_location: ProductLocationEnum = Field(
@@ -62,10 +63,10 @@ class ProductRead(ProductBase):
     """Read product model."""
 
     id: int = Field(..., title="Product ID", ge=1)
-    added_date: datetime = Field(
+    creation_date: datetime = Field(
         ...,
-        title="Product added date",
-        description="Product added date",
+        title="Product creation date",
+        description="Product creation date",
     )
     image_location: str = Field(
         ...,
@@ -79,6 +80,22 @@ class ProductRead(ProductBase):
         """Pydantic configuration."""
 
         orm_mode = True
+
+    @classmethod
+    def from_model(cls, model: Product) -> Self:
+        """Create a ProductRead instance from a Product model instance."""
+        return cls(
+            id=model.id,
+            name=model.name,
+            description=model.description,
+            quantity=model.quantity,
+            unit=ProductUnitEnum(model.unit),
+            creation_date=model.creation_date,
+            expiry_date=model.expiry_date,
+            product_location=ProductLocationEnum(model.product_location.name),
+            product_type=ProductTypeEnum(model.product_type.name),
+            image_location=model.image_location,
+        )
 
     @field_validator("image_location")
     @classmethod
@@ -99,7 +116,7 @@ class ProductReadList(BaseModel):
     """List of product models."""
 
     products: list[ProductRead] = Field(..., title="List of products")
-    next_skip: int = Field(
+    next_offset: int = Field(
         ...,
         description="Database index of the last product in the list.",
         ge=0,
@@ -116,14 +133,13 @@ class ProductReadList(BaseModel):
         orm_mode = True
 
     @classmethod
-    def from_db_products(
-        cls, product_list: list[Product], skip: int, limit: int, total: int
-    ) -> Self:
-        """Create a ProductReadList instance from a list of Product model instances."""
+    def from_paginated_response(cls, paginated_response: PaginatedResponse[Product]) -> Self:
+        """Create a ProductReadList instance from a PaginatedResponse instance."""
         return cls(
-            products=[ProductRead.from_model(product) for product in product_list],
-            next_skip=skip + min(limit, len(product_list)),
-            total=total,
+            products=[ProductRead.from_model(product) for product in paginated_response.data],
+            next_offset=paginated_response.offset
+            + min(paginated_response.limit, len(paginated_response.data)),
+            total=paginated_response.total,
         )
 
 
@@ -137,3 +153,9 @@ class CreatedProduct(BaseModel):
     def from_model(cls, model: Product) -> Self:
         """Create a CreatedProduct instance from a Product model instance."""
         return cls(product_id=model.id, message="Product created successfully")
+
+
+class ErrorResponse(BaseModel):
+    """Error response model."""
+
+    detail: str = Field(..., description="Error message.")

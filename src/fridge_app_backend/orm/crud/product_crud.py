@@ -7,7 +7,10 @@ from sqlalchemy.orm import Session
 from fridge_app_backend.config import BRUSSELS_TZ
 from fridge_app_backend.orm.crud.base_crud import CRUDBase
 from fridge_app_backend.orm.models.db_models import Product, ProductLocation, ProductType
-from fridge_app_backend.orm.schemas.product_schemas import ProductCreate, ProductUpdate
+from fridge_app_backend.orm.schemas.product_schemas import (
+    ProductCreate,
+    ProductUpdate,
+)
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
@@ -34,8 +37,8 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             description=obj_dict["description"],
             quantity=obj_dict["quantity"],
             unit=obj_dict["unit"],
-            added_date=datetime.now(tz=BRUSSELS_TZ),
-            expiration_date=obj_dict["expiration_date"],
+            creation_date=datetime.now(tz=BRUSSELS_TZ),
+            expiry_date=obj_dict["expiry_date"],
             product_type=product_type,
             product_location=product_location,
             image_location="file_path",

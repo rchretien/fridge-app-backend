@@ -31,6 +31,6 @@ class BadDBTypeError(Exception):
 class ModelNotHavingAttributeError(Exception):
     """Exception raised when the model does not have the requested attribute."""
 
-    def __init__(self, model: type, attribute: str) -> None:
+    def __init__(self, model_name: str, attribute: str) -> None:
         """Initialise the exception."""
-        super().__init__(f"Model {model} does not have attribute {attribute}.")
+        super().__init__(f"Model {model_name} does not have attribute {attribute}.")
