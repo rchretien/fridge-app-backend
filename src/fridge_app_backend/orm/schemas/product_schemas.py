@@ -109,7 +109,7 @@ class ProductRead(ProductBase):
     class Config:
         """Pydantic configuration."""
 
-        orm_mode = True
+        from_attributes = True
 
     @classmethod
     def from_model(cls, model: Product) -> Self:
@@ -160,7 +160,7 @@ class ProductReadList(BaseModel):
     class Config:
         """Pydantic configuration."""
 
-        orm_mode = True
+        from_attributes = True
 
     @classmethod
     def from_paginated_response(cls, paginated_response: PaginatedResponse[Product]) -> Self:

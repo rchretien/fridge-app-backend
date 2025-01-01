@@ -29,7 +29,7 @@ class ProductTypeRead(ProductTypeBase):
     class Config:
         """Pydantic configuration."""
 
-        orm_mode = True
+        from_attributes = True
 
     @classmethod
     def from_model(cls, product_type: ProductType) -> Self:
@@ -47,7 +47,7 @@ class ProductTypeReadList(BaseModel):
     class Config:
         """Pydantic configuration."""
 
-        orm_mode = True
+        from_attributes = True
 
     @classmethod
     def from_db_product_type_list(cls, product_type_list: list[ProductType]) -> Self:

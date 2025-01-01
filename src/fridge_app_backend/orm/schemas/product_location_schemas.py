@@ -32,7 +32,7 @@ class ProductLocationRead(ProductLocationBase):
     class Config:
         """Pydantic configuration."""
 
-        orm_mode = True
+        from_attributes = True
 
     @classmethod
     def from_model(cls, product_location: ProductLocation) -> Self:
