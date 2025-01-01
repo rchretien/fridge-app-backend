@@ -3,12 +3,12 @@
 import httpx
 from fastapi.testclient import TestClient
 
-from fridge_app_backend.api import app
+from fridge_app_backend.api.main import app
 
 client = TestClient(app)
 
 
 def test_read_root() -> None:
     """Test that reading the root is successful."""
-    response = client.get("/compute", params={"n": 7})
+    response = client.get("/")
     assert httpx.codes.is_success(response.status_code)

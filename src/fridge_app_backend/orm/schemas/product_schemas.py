@@ -1,0 +1,191 @@
+"""Data models for product."""
+
+import re
+from datetime import datetime, timedelta
+from typing import Self
+
+from pydantic import BaseModel, Field, field_validator
+
+from fridge_app_backend.config import BRUSSELS_TZ
+from fridge_app_backend.orm.crud.base_crud import PaginatedResponse
+from fridge_app_backend.orm.enums.base_enums import (
+    ProductLocationEnum,
+    ProductTypeEnum,
+    ProductUnitEnum,
+)
+from fridge_app_backend.orm.models.db_models import Product
+
+
+class ProductName(BaseModel):
+    """Data model for a product name."""
+
+    name: str = Field(
+        ..., title="Product name", min_length=1, max_length=50, description="Product name"
+    )
+
+    @field_validator("name")
+    @classmethod
+    def sentence_case_name(cls, value: str) -> str:
+        """Convert the product name to sentence case."""
+        return value.capitalize()
+
+
+class ProductNameList(BaseModel):
+    """Data model for a list of product names."""
+
+    names: list[ProductName] = Field(..., title="List of product names")
+
+    @classmethod
+    def from_list(cls, product_names: list[str]) -> Self:
+        """Create a ProductNameList instance from a list of product names."""
+        return cls(names=[ProductName(name=name) for name in product_names])
+
+
+class ProductBase(BaseModel):
+    """Base class for product."""
+
+    product_name: str = Field(
+        ...,
+        min_length=1,
+        max_length=50,
+        title="Product name",
+        description="Product name",
+        examples=["Filet de poulet"],
+    )
+    description: str = Field(
+        ...,
+        title="Product description",
+        min_length=1,
+        max_length=256,
+        description="Product description",
+    )
+    quantity: int = Field(..., title="Product quantity", ge=1, description="Product quantity")
+    unit: ProductUnitEnum = Field(
+        ..., title="Product unit", min_length=1, max_length=50, description="Product unit"
+    )
+    expiry_date: datetime = Field(
+        ...,
+        title="Product expiry date",
+        description="Product expiry date",
+        examples=[datetime.now(tz=BRUSSELS_TZ) + timedelta(hours=1)],
+    )
+    product_location: ProductLocationEnum = Field(
+        ...,
+        title="Product location",
+        description="Product location",
+    )
+    product_type: ProductTypeEnum = Field(
+        ...,
+        title="Product type",
+        description="Product type",
+    )
+
+
+class ProductCreate(ProductBase):
+    """Create product."""
+
+
+class ProductUpdate(ProductBase):
+    """Update product."""
+
+
+class ProductRead(ProductBase):
+    """Read product model."""
+
+    id: int = Field(..., title="Product ID", ge=1)
+    creation_date: datetime = Field(
+        ...,
+        title="Product creation date",
+        description="Product creation date",
+    )
+    image_location: str = Field(
+        ...,
+        title="Product image location",
+        min_length=1,
+        max_length=256,
+        description="Product image location on the server",
+    )
+
+    class Config:
+        """Pydantic configuration."""
+
+        from_attributes = True
+
+    @classmethod
+    def from_model(cls, model: Product) -> Self:
+        """Create a ProductRead instance from a Product model instance."""
+        return cls(
+            id=model.id,
+            product_name=model.name,
+            description=model.description,
+            quantity=model.quantity,
+            unit=ProductUnitEnum(model.unit),
+            creation_date=model.creation_date,
+            expiry_date=model.expiry_date,
+            product_location=ProductLocationEnum(model.product_location.name),
+            product_type=ProductTypeEnum(model.product_type.name),
+            image_location=model.image_location,
+        )
+
+    @field_validator("image_location")
+    @classmethod
+    def validate_image_location(cls, value: str) -> str:
+        """Validate if image location is a valid UNIX file path."""
+
+        def is_valid_unix_file_path(file_path: str) -> bool:
+            """Check if a string is a valid UNIX file path."""
+            pattern = re.compile(r"^(\/)?([^/\0]+(\/)?)+$")
+            return bool(pattern.match(file_path))
+
+        if not is_valid_unix_file_path(value):
+            raise ValueError("Invalid UNIX file path")  # noqa: EM101, TRY003
+        return value
+
+
+class ProductReadList(BaseModel):
+    """List of product models."""
+
+    products: list[ProductRead] = Field(..., title="List of products")
+    next_offset: int = Field(
+        ...,
+        description="Database index of the last product in the list.",
+        ge=0,
+    )
+    total: int = Field(
+        ...,
+        description="Total number of products the endpoint can return when called with a given sequence of filters.",
+        ge=0,
+    )
+
+    class Config:
+        """Pydantic configuration."""
+
+        from_attributes = True
+
+    @classmethod
+    def from_paginated_response(cls, paginated_response: PaginatedResponse[Product]) -> Self:
+        """Create a ProductReadList instance from a PaginatedResponse instance."""
+        return cls(
+            products=[ProductRead.from_model(product) for product in paginated_response.data],
+            next_offset=paginated_response.offset
+            + min(paginated_response.limit, len(paginated_response.data)),
+            total=paginated_response.total,
+        )
+
+
+class CreatedProduct(BaseModel):
+    """Data model for a created product."""
+
+    product_id: int = Field(..., description="ID of the created product.")
+    message: str = Field(..., description="Message about the created product")
+
+    @classmethod
+    def from_model(cls, model: Product) -> Self:
+        """Create a CreatedProduct instance from a Product model instance."""
+        return cls(product_id=model.id, message="Product created successfully")
+
+
+class ErrorResponse(BaseModel):
+    """Error response model."""
+
+    detail: str = Field(..., description="Error message.")
