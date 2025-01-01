@@ -16,11 +16,41 @@ from fridge_app_backend.orm.enums.base_enums import (
 from fridge_app_backend.orm.models.db_models import Product
 
 
-class ProductBase(BaseModel):
-    """Base class for product."""
+class ProductName(BaseModel):
+    """Data model for a product name."""
 
     name: str = Field(
         ..., title="Product name", min_length=1, max_length=50, description="Product name"
+    )
+
+    @field_validator("name")
+    @classmethod
+    def sentence_case_name(cls, value: str) -> str:
+        """Convert the product name to sentence case."""
+        return value.capitalize()
+
+
+class ProductNameList(BaseModel):
+    """Data model for a list of product names."""
+
+    names: list[ProductName] = Field(..., title="List of product names")
+
+    @classmethod
+    def from_list(cls, product_names: list[str]) -> Self:
+        """Create a ProductNameList instance from a list of product names."""
+        return cls(names=[ProductName(name=name) for name in product_names])
+
+
+class ProductBase(BaseModel):
+    """Base class for product."""
+
+    product_name: str = Field(
+        ...,
+        min_length=1,
+        max_length=50,
+        title="Product name",
+        description="Product name",
+        examples=["Filet de poulet"],
     )
     description: str = Field(
         ...,
@@ -86,7 +116,7 @@ class ProductRead(ProductBase):
         """Create a ProductRead instance from a Product model instance."""
         return cls(
             id=model.id,
-            name=model.name,
+            product_name=model.name,
             description=model.description,
             quantity=model.quantity,
             unit=ProductUnitEnum(model.unit),

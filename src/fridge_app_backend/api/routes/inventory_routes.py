@@ -1,5 +1,7 @@
 """Endpoints for interacting with the fridge inventory."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Query
 from fastapi.responses import Response
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
@@ -14,6 +16,8 @@ from fridge_app_backend.orm.schemas.product_schemas import (
     CreatedProduct,
     ErrorResponse,
     ProductCreate,
+    ProductName,
+    ProductNameList,
     ProductRead,
     ProductReadList,
     ProductUpdate,
@@ -41,7 +45,12 @@ async def create_product(
     return CreatedProduct.from_model(product_crud.create(session, obj_in=create_product_in))
 
 
-@inventory_router.get("/list", response_model=ProductReadList)
+@inventory_router.get(
+    "/list",
+    response_model=ProductReadList,
+    responses={HTTP_200_OK: {"model": ProductReadList, "description": "List of products"}},
+    status_code=HTTP_200_OK,
+)
 async def get_product_list(
     *,
     ascending: bool = Query(default=False, description="Sort in ascending order"),
@@ -54,6 +63,24 @@ async def get_product_list(
     return ProductReadList.from_paginated_response(
         paginated_response=product_crud.get_multi_paginated(
             session=session, limit=limit, offset=offset, ascending=ascending, order_by=order_by
+        )
+    )
+
+
+@inventory_router.get(
+    "/startswith",
+    response_model=ProductNameList,
+    status_code=HTTP_200_OK,
+    responses={HTTP_200_OK: {"model": ProductNameList, "description": "List of product names"}},
+)
+async def get_product_names_starting_with(
+    session: SessionDependency,
+    product_name: Annotated[ProductName, Query(description="Name of the product to search for")],
+) -> ProductNameList:
+    """Get all products starting with a specific name."""
+    return ProductNameList.from_list(
+        product_names=product_crud.get_names_starting_with(
+            product_name=product_name.name, session=session
         )
     )
 

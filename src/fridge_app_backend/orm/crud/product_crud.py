@@ -33,7 +33,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         )
 
         return Product(
-            name=obj_dict["name"],
+            name=obj_dict["product_name"],
             description=obj_dict["description"],
             quantity=obj_dict["quantity"],
             unit=obj_dict["unit"],
@@ -43,6 +43,15 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             product_location=product_location,
             image_location="file_path",
         )
+
+    def get_names_starting_with(self, product_name: str, session: Session) -> list[str]:
+        """Get product names starting with a specific string."""
+        return [
+            row.name
+            for row in session.query(Product.name)
+            .filter(Product.name.ilike(f"{product_name}%"))
+            .all()
+        ]
 
 
 product_crud = CRUDProduct(Product)
