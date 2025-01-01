@@ -2,21 +2,21 @@ name: Deploy
 
 on:
   push:
-    tags:
-      - "v*.*.*"
-  workflow_dispatch:
-    inputs:
-      environment:
-        required: true
-        description: Deployment environment
-        default: development
-        type: choice
-        options:
-          - feature
-          - development
-          - test
-          - acceptance
-          - production
+  #   tags:
+  #     - "v*.*.*"
+  # workflow_dispatch:
+  #   inputs:
+  #     environment:
+  #       required: true
+  #       description: Deployment environment
+  #       default: development
+  #       type: choice
+  #       options:
+  #         - feature
+  #         - development
+  #         - test
+  #         - acceptance
+  #         - production
 
 env:
   DEFAULT_DEPLOYMENT_ENVIRONMENT: feature
@@ -46,7 +46,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: false
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ github.repository }}:${{ github.event.inputs.environment || env.DEFAULT_DEPLOYMENT_ENVIRONMENT }}
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ github.repository }}:${{ env.GIT_TAG }}
