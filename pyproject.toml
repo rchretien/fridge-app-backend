@@ -23,9 +23,9 @@ gunicorn = ">=21.2.0"
 poethepoet = ">=0.25.0"
 python = ">=3.12,<4.0"
 uvicorn = { extras = ["standard"], version = ">=0.29.0" }
-pytz = "^2024.2"
-sqlalchemy = "^2.0.36"
-types-pytz = "^2024.2.0.20241221"
+pytz = "^2025.1"
+sqlalchemy = "^2.0.38"
+types-pytz = "^2025.1.0.20250204"
 
 [tool.poetry.group.test.dependencies]  # https://python-poetry.org/docs/master/managing-dependencies/
 commitizen = ">=3.21.3"
