@@ -1,8 +1,8 @@
-site_name: Claims
-site_description: Just a toy project
-site_url: https://rchretien.github.com.github.io/claims
-repo_url: https://rchretien.github.com/claims
-repo_name: rchretien.github.com/claims
+site_name: Fridge App Backend API Documentation
+site_description: API documentation for the Fridge App Backend project.
+site_url: https://rchretien.github.com.github.io/fridge-app-backend
+repo_url: https://rchretien.github.com/fridge-app-backend
+repo_name: rchretien.github.com/fridge-app-backend
 
 theme:
   name: material

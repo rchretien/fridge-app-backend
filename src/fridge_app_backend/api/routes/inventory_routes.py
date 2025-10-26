@@ -23,23 +23,18 @@ from fridge_app_backend.orm.schemas.product_schemas import (
     ProductUpdate,
 )
 
-inventory_router = APIRouter(
-    prefix="/inventory",
-    tags=["Inventory"],
-)
+inventory_router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
 
 @inventory_router.post(
     "/create",
-    response_model=CreatedProduct,
     responses={
         HTTP_201_CREATED: {"model": CreatedProduct, "description": "Product successfully created"}
     },
     status_code=HTTP_201_CREATED,
 )
 async def create_product(
-    create_product_in: ProductCreate,
-    session: SessionDependency,
+    create_product_in: ProductCreate, session: SessionDependency
 ) -> CreatedProduct:
     """Create a new product."""
     return CreatedProduct.from_model(product_crud.create(session, obj_in=create_product_in))
@@ -47,7 +42,6 @@ async def create_product(
 
 @inventory_router.get(
     "/list",
-    response_model=ProductReadList,
     responses={HTTP_200_OK: {"model": ProductReadList, "description": "List of products"}},
     status_code=HTTP_200_OK,
 )
@@ -69,7 +63,6 @@ async def get_product_list(
 
 @inventory_router.get(
     "/startswith",
-    response_model=ProductNameList,
     status_code=HTTP_200_OK,
     responses={HTTP_200_OK: {"model": ProductNameList, "description": "List of product names"}},
 )
@@ -87,7 +80,6 @@ async def get_product_names_starting_with(
 
 @inventory_router.patch(
     "/update",
-    response_model=ProductRead,
     responses={
         HTTP_200_OK: {"model": ProductRead, "description": "Product successfully updated"},
         HTTP_404_NOT_FOUND: {"model": ErrorResponse, "description": "Product not found"},

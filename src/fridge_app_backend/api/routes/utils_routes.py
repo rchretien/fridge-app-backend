@@ -9,10 +9,7 @@ from fridge_app_backend.orm.database import get_session
 from fridge_app_backend.orm.schemas.product_location_schemas import ProductLocationReadList
 from fridge_app_backend.orm.schemas.product_type_schemas import ProductTypeReadList
 
-utils_router = APIRouter(
-    prefix="/utils",
-    tags=["Utilities"],
-)
+utils_router = APIRouter(prefix="/utils", tags=["Utilities"])
 
 
 @utils_router.get("/product_type_list")
