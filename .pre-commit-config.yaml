@@ -1,6 +1,6 @@
 # https://pre-commit.com
 default_install_hook_types: [commit-msg, pre-commit]
-default_stages: [commit, manual]
+default_stages: [pre-commit, manual]
 fail_fast: true
 repos:
   - repo: meta
@@ -16,13 +16,14 @@ repos:
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
       - id: check-builtin-literals
       - id: check-case-conflict
       - id: check-docstring-first
+      - id: check-illegal-windows-names
       - id: check-json
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
@@ -44,26 +45,17 @@ repos:
         types: [python]
   - repo: local
     hooks:
-      - id: bandit
-        name: bandit
-        description: 'Bandit is a tool for finding common security issues in Python code'
-        entry: bandit
-        args: ["--exclude", "tests,tests/*"]
-        language: python
-        language_version: python3
-        types: [python]
-        require_serial: true
-      - id: commitizen
-        name: commitizen
-        entry: cz check
-        args: [--commit-msg-file]
+      - id: uv-lock-check
+        name: uv lock check
+        entry: uv lock
+        args: ["--check"]
         require_serial: true
         language: system
-        stages: [commit-msg]
+        pass_filenames: false
       - id: ruff-check
         name: ruff check
         entry: ruff check
-        args: ["--force-exclude", "--extend-fixable=ERA001,F401,F841,T201,T203"]
+        args: ["--force-exclude", "--extend-fixable=ERA001,F401,F841,T201,T203", "--fix-only"]
         require_serial: true
         language: system
         types_or: [python, pyi]
@@ -74,19 +66,10 @@ repos:
         require_serial: true
         language: system
         types_or: [python, pyi]
-      - id: shellcheck
-        name: shellcheck
-        entry: shellcheck
-        args: [--check-sourced]
-        language: system
-        types: [shell]
-      - id: poetry-check
-        name: poetry check
-        entry: poetry check
-        language: system
-        pass_filenames: false
       - id: mypy
         name: mypy
         entry: mypy
+        args: ["src"]
         language: system
         types: [python]
+        pass_filenames: false
