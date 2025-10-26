@@ -7,10 +7,7 @@ from sqlalchemy.orm import Session
 from fridge_app_backend.config import BRUSSELS_TZ
 from fridge_app_backend.orm.crud.base_crud import CRUDBase
 from fridge_app_backend.orm.models.db_models import Product, ProductLocation, ProductType
-from fridge_app_backend.orm.schemas.product_schemas import (
-    ProductCreate,
-    ProductUpdate,
-)
+from fridge_app_backend.orm.schemas.product_schemas import ProductCreate, ProductUpdate
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):

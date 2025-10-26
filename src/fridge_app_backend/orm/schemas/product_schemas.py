@@ -70,15 +70,9 @@ class ProductBase(BaseModel):
         examples=[datetime.now(tz=BRUSSELS_TZ) + timedelta(hours=1)],
     )
     product_location: ProductLocationEnum = Field(
-        ...,
-        title="Product location",
-        description="Product location",
+        ..., title="Product location", description="Product location"
     )
-    product_type: ProductTypeEnum = Field(
-        ...,
-        title="Product type",
-        description="Product type",
-    )
+    product_type: ProductTypeEnum = Field(..., title="Product type", description="Product type")
 
 
 class ProductCreate(ProductBase):
@@ -94,9 +88,7 @@ class ProductRead(ProductBase):
 
     id: int = Field(..., title="Product ID", ge=1)
     creation_date: datetime = Field(
-        ...,
-        title="Product creation date",
-        description="Product creation date",
+        ..., title="Product creation date", description="Product creation date"
     )
     image_location: str = Field(
         ...,
@@ -147,9 +139,7 @@ class ProductReadList(BaseModel):
 
     products: list[ProductRead] = Field(..., title="List of products")
     next_offset: int = Field(
-        ...,
-        description="Database index of the last product in the list.",
-        ge=0,
+        ..., description="Database index of the last product in the list.", ge=0
     )
     total: int = Field(
         ...,

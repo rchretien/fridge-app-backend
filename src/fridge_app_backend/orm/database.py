@@ -33,10 +33,7 @@ if DB_TYPE == "deployed":
     )
 else:
     engine = create_engine(
-        DB_CONN,
-        future=True,
-        connect_args=DB_CONNECTION_ARGS,
-        poolclass=NullPool,
+        DB_CONN, future=True, connect_args=DB_CONNECTION_ARGS, poolclass=NullPool
     )
 
 engine = create_engine("sqlite:///:memory:", echo=True, connect_args={"check_same_thread": False})
@@ -73,7 +70,7 @@ def reset_db() -> None:
         init_product_type_table(session=session)
 
 
-def get_session() -> Generator[Session, None, None]:
+def get_session() -> Generator[Session]:
     """Get a DB Session.
 
     Yields

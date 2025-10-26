@@ -33,7 +33,7 @@ logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Initialize and close the database connection."""
     logger.info("API start up operations...")
     logger.info("Initialising DB...")
