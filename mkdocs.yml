@@ -1,0 +1,18 @@
+site_name: Claims
+site_description: Just a toy project
+site_url: https://rchretien.github.com.github.io/claims
+repo_url: https://rchretien.github.com/claims
+repo_name: rchretien.github.com/claims
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
