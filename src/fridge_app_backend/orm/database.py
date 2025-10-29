@@ -6,6 +6,7 @@ from collections.abc import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import StaticPool
 
 from fridge_app_backend.config import DB_CONN, DB_CONNECTION_ARGS, DB_TYPE
 from fridge_app_backend.orm.models.db_models import (
@@ -31,12 +32,17 @@ if DB_TYPE == "deployed":
         pool_timeout=30,
         pool_recycle=1800,
     )
+elif DB_TYPE == "in_memory":
+    engine = create_engine(
+        DB_CONN, 
+        future=True, 
+        connect_args=DB_CONNECTION_ARGS, 
+        poolclass=StaticPool
+    )
 else:
     engine = create_engine(
         DB_CONN, future=True, connect_args=DB_CONNECTION_ARGS, poolclass=NullPool
     )
-
-engine = create_engine("sqlite:///:memory:", echo=True, connect_args={"check_same_thread": False})
 
 
 # We name it SessionLocal to distinguish it from the Session we are importing from SQLAlchemy.
@@ -45,9 +51,12 @@ SessionLocal = sessionmaker(bind=engine)
 
 def initialise_db() -> None:
     """Recreate the database based on structure defined by models."""
+    logger.info(f"Database URL: {engine.url}")
+    logger.info("Creating database tables...")
     # Emit DDL to the DB - create DB
     # emit CREATE statements given ORM registry
     Base.metadata.create_all(engine)
+    logger.info("Database tables created successfully")
 
     # Fill all default tables with initial/default data if they are empty
     with SessionLocal.begin() as session:
