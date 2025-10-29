@@ -1,12 +1,11 @@
 """SQLAlchemy ORM model definitions for the fridge app backend."""
 
-import json
 from datetime import datetime
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-from fridge_app_backend.orm.enums.base_enums import ProductTypeEnum, ProductLocationEnum
+from fridge_app_backend.orm.enums.base_enums import ProductLocationEnum, ProductTypeEnum
 
 
 class Base(DeclarativeBase):
