@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 
-from fridge_app_backend.config import DB_CONN, DB_CONNECTION_ARGS, DB_TYPE
+from fridge_app_backend.config import get_settings
 from fridge_app_backend.orm.models.db_models import (
     Base,
     ProductLocation,
@@ -17,15 +17,16 @@ from fridge_app_backend.orm.models.db_models import (
 )
 
 logger = logging.getLogger(__name__)
+config = get_settings()
 
 
 # Singleton engine object (connection pooling is applied for performance only in deployed mode)
-if DB_TYPE == "deployed":
+if config.db_type == "deployed":
     logger.info("Database connection established for deployed environment.")
     engine = create_engine(
-        DB_CONN,
+        url=config.db_url,
         future=True,
-        connect_args=DB_CONNECTION_ARGS,
+        connect_args=config.db_conn_args,
         pool_size=20,
         max_overflow=10,
         pool_timeout=30,
@@ -33,7 +34,7 @@ if DB_TYPE == "deployed":
     )
 else:
     engine = create_engine(
-        DB_CONN, future=True, connect_args=DB_CONNECTION_ARGS, poolclass=NullPool
+        url=config.db_url, future=True, connect_args=config.db_conn_args, poolclass=NullPool
     )
 
 engine = create_engine("sqlite:///:memory:", echo=True, connect_args={"check_same_thread": False})

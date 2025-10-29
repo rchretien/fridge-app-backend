@@ -6,7 +6,7 @@ from typing import Self
 
 from pydantic import BaseModel, Field, field_validator
 
-from fridge_app_backend.config import BRUSSELS_TZ
+from fridge_app_backend.config import get_settings
 from fridge_app_backend.orm.crud.base_crud import PaginatedResponse
 from fridge_app_backend.orm.enums.base_enums import (
     ProductLocationEnum,
@@ -15,6 +15,7 @@ from fridge_app_backend.orm.enums.base_enums import (
 )
 from fridge_app_backend.orm.models.db_models import Product
 
+config = get_settings()
 
 class ProductName(BaseModel):
     """Data model for a product name."""
@@ -67,7 +68,7 @@ class ProductBase(BaseModel):
         ...,
         title="Product expiry date",
         description="Product expiry date",
-        examples=[datetime.now(tz=BRUSSELS_TZ) + timedelta(hours=1)],
+        examples=[datetime.now(tz=config.brussels_tz) + timedelta(hours=1)],
     )
     product_location: ProductLocationEnum = Field(
         ..., title="Product location", description="Product location"
