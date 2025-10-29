@@ -1,12 +1,11 @@
 """SQLAlchemy ORM model definitions for the fridge app backend."""
 
-import json
 from datetime import datetime
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-from fridge_app_backend.config import LOCATION_LIST_FILE_PATH, PRODUCT_TYPE_LIST_FILE_PATH
+from fridge_app_backend.orm.enums.base_enums import ProductLocationEnum, ProductTypeEnum
 
 
 class Base(DeclarativeBase):
@@ -86,28 +85,20 @@ class Product(BaseWithID):
 
 
 def init_product_type_table(session: Session) -> None:
-    """Initialise the product type table with default data."""
-    with PRODUCT_TYPE_LIST_FILE_PATH.open("r") as file:
-        product_type_list = json.load(file)
-
-    # Insert default data into the table
+    """Initialise the product type table from ProductTypeEnum."""
     session.add_all(
         [
-            ProductType(name=product_type["name"])
-            for product_type in product_type_list["product_type_list"]
+            ProductType(name=product_type.value)
+            for product_type in ProductTypeEnum
         ]
     )
 
 
 def init_product_location_table(session: Session) -> None:
-    """Initialise the location table with default data."""
-    with LOCATION_LIST_FILE_PATH.open("r") as file:
-        product_location_list = json.load(file)
-
-    # Insert default data into the table
+    """Initialise the location table from ProductLocationEnum."""
     session.add_all(
         [
-            ProductLocation(name=product_location["name"])
-            for product_location in product_location_list["product_location_list"]
+            ProductLocation(name=location.value)
+            for location in ProductLocationEnum
         ]
     )

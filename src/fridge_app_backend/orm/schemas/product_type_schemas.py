@@ -4,13 +4,15 @@ from typing import Self
 
 from pydantic import BaseModel, Field
 
+from fridge_app_backend.orm.enums.base_enums import ProductTypeEnum
 from fridge_app_backend.orm.models.db_models import ProductType
 
 
 class ProductTypeBase(BaseModel):
     """Base class for product type."""
 
-    name: str = Field(..., title="Product type name", min_length=1, max_length=50)
+    name: ProductTypeEnum = Field(
+        ..., title="Product type name", min_length=1, max_length=50)
 
 
 class ProductTypeCreate(ProductTypeBase):
