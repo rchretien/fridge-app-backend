@@ -11,8 +11,7 @@ from fridge_app_backend.orm.models.db_models import ProductType
 class ProductTypeBase(BaseModel):
     """Base class for product type."""
 
-    name: ProductTypeEnum = Field(
-        ..., title="Product type name", min_length=1, max_length=50)
+    name: ProductTypeEnum = Field(..., title="Product type name", min_length=1, max_length=50)
 
 
 class ProductTypeCreate(ProductTypeBase):
@@ -36,7 +35,7 @@ class ProductTypeRead(ProductTypeBase):
     @classmethod
     def from_model(cls, product_type: ProductType) -> Self:
         """Create a ProductTypeRead instance from a ProductType model instance."""
-        return cls(id=product_type.id, name=product_type.name)
+        return cls(id=product_type.id, name=ProductTypeEnum(product_type.name))
 
 
 class ProductTypeReadList(BaseModel):
