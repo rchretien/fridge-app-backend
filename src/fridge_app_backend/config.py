@@ -11,20 +11,13 @@ from pytz import timezone
 
 from fridge_app_backend.exceptions import BadDBTypeError, BadEnvironmentError
 
-# load_dotenv()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-# Configuration variables for the ORM
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-LOCATION_LIST_FILE_PATH = ROOT_DIR / "data/product_location_list.json"
-PRODUCT_TYPE_LIST_FILE_PATH = ROOT_DIR / "data/product_type_list.json"
-
-
-# Environment specic variables
 AVAILABLE_ENVIRONMENTS = {"local", "test", "dev", "prod"}
 DEPLOYED_ENVIRONMENTS = {"prod"}
 AVAILABLE_DB_TYPES = {"in_memory", "sqlite", "postgres"}
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 class Config(BaseSettings):
