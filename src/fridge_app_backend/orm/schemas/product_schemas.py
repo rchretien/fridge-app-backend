@@ -17,6 +17,7 @@ from fridge_app_backend.orm.models.db_models import Product
 
 config = get_settings()
 
+
 class ProductName(BaseModel):
     """Data model for a product name."""
 

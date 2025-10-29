@@ -11,6 +11,7 @@ from fridge_app_backend.orm.schemas.product_schemas import ProductCreate, Produc
 
 config = get_settings()
 
+
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
     """CRUD operations for product model."""
 

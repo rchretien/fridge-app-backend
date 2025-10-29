@@ -1,18 +1,17 @@
 """Module containing API configuration variables."""
 
 import logging
-from os import getenv
 from functools import lru_cache
+from os import getenv
 from pathlib import Path
-from pydantic_settings import BaseSettings
-from pydantic import field_validator
-from dotenv import load_dotenv
 
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pytz import timezone
 
 from fridge_app_backend.exceptions import BadDBTypeError, BadEnvironmentError
 
-#load_dotenv()
+# load_dotenv()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -30,11 +29,16 @@ AVAILABLE_DB_TYPES = {"in_memory", "sqlite", "postgres"}
 
 class Config(BaseSettings):
     """Configuration class for the API."""
+
+    model_config = SettingsConfigDict(
+        env_file=Path(f"{ROOT_DIR}/.env-{getenv('ENVIRONMENT', 'local')}")
+    )
+
     # API specic variables
     api_name: str = "Fridge Inventory App Backend"
     api_description: str = "CRUD API for managing a fridge inventory."
     api_version: str = "0.1.0"
-    #brussels_tz: timezone = timezone("Europe/Brussels")
+    brussels_tz_name: str = "Europe/Brussels"
     commit_sha: str | None = None
 
     # Environment specific variables
@@ -54,19 +58,21 @@ class Config(BaseSettings):
         """Validate the environment."""
         if value not in AVAILABLE_ENVIRONMENTS:
             raise BadEnvironmentError(
-                current_environment=value,
-                allowed_environments=AVAILABLE_ENVIRONMENTS
+                current_environment=value, allowed_environments=AVAILABLE_ENVIRONMENTS
             )
         return value
 
     @field_validator("db_type")
     @classmethod
-    def validate_db_type(cls, value:str) -> str:
+    def validate_db_type(cls, value: str) -> str:
         """Validate db type."""
         if value not in AVAILABLE_DB_TYPES:
-            raise BadDBTypeError(db_type=value,
-                                 allowed_types=AVAILABLE_DB_TYPES)
+            raise BadDBTypeError(db_type=value, allowed_types=AVAILABLE_DB_TYPES)
         return value
+
+    @property
+    def brussels_tz(self):
+        return timezone(self.brussels_tz_name)
 
     # ---------------------------------------------
     # 🔗 Database connection logic
@@ -90,8 +96,7 @@ class Config(BaseSettings):
                 f"{self.db_host}:{self.db_port}/{self.db_name}"
             )
 
-        raise BadDBTypeError(db_type=self.db_type,
-                             allowed_types=AVAILABLE_DB_TYPES)
+        raise BadDBTypeError(db_type=self.db_type, allowed_types=AVAILABLE_DB_TYPES)
 
     @property
     def db_conn_args(self) -> dict[str, str | bool]:
@@ -104,16 +109,4 @@ class Config(BaseSettings):
 @lru_cache
 def get_settings() -> Config:
     """Return the settings."""
-    env = getenv("ENVIRONMENT", "local")  # e.g. local | docker | prod
-    candidate = Path(f"{ROOT_DIR}/.env-{env}")
-    env_file = candidate if candidate.exists() else Path(".env")
-    return Config(_env_file=env_file, _env_file_encoding="utf-8")
-
-
-def main():
-    config = get_settings()
-    print(config)
-
-
-if __name__ == "__main__":
-    main()
+    return Config()
