@@ -19,10 +19,6 @@ API_VERSION = "0.1.0"
 BRUSSELS_TZ = timezone("Europe/Brussels")
 COMMIT_SHA = os.environ.get("COMMIT", None)
 
-# Configuration variables for the ORM
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-LOCATION_LIST_FILE_PATH = ROOT_DIR / "data/product_location_list.json"
-PRODUCT_TYPE_LIST_FILE_PATH = ROOT_DIR / "data/product_type_list.json"
 
 # Environment specic variables
 AVAILABLE_ENVIRONMENTS = {"dev", "prod"}
