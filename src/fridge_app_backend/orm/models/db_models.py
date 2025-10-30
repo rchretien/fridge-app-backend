@@ -86,19 +86,9 @@ class Product(BaseWithID):
 
 def init_product_type_table(session: Session) -> None:
     """Initialise the product type table from ProductTypeEnum."""
-    session.add_all(
-        [
-            ProductType(name=product_type.value)
-            for product_type in ProductTypeEnum
-        ]
-    )
+    session.add_all([ProductType(name=product_type.value) for product_type in ProductTypeEnum])
 
 
 def init_product_location_table(session: Session) -> None:
     """Initialise the location table from ProductLocationEnum."""
-    session.add_all(
-        [
-            ProductLocation(name=location.value)
-            for location in ProductLocationEnum
-        ]
-    )
+    session.add_all([ProductLocation(name=location.value) for location in ProductLocationEnum])
