@@ -33,7 +33,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Initialize and close the database connection."""
     logger.info("API start up operations...")
     logger.info("Initialising DB...")
-    initialise_db()
+
+    if config.db_type == "in_memory":
+        initialise_db()
+    else:
+        raise NotImplementedError("Only in_memory sqlite supported for now")
 
     try:
         yield  # Yield control to the application
@@ -45,7 +49,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(
-    title=config.api_name,
+    title=f"{config.api_name} in {config.environment} environment with {config.db_type} database",
     description=config.api_description,
     started=datetime.now(tz=config.brussels_tz),
     version=config.api_version,
