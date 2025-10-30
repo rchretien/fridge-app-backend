@@ -4,12 +4,10 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from fridge_app_backend.config import get_settings
+from fridge_app_backend.config import config
 from fridge_app_backend.orm.crud.base_crud import CRUDBase
 from fridge_app_backend.orm.models.db_models import Product, ProductLocation, ProductType
 from fridge_app_backend.orm.schemas.product_schemas import ProductCreate, ProductUpdate
-
-config = get_settings()
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):

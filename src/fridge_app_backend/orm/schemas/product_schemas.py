@@ -6,7 +6,7 @@ from typing import Self
 
 from pydantic import BaseModel, Field, field_validator
 
-from fridge_app_backend.config import get_settings
+from fridge_app_backend.config import config
 from fridge_app_backend.orm.crud.base_crud import PaginatedResponse
 from fridge_app_backend.orm.enums.base_enums import (
     ProductLocationEnum,
@@ -14,8 +14,6 @@ from fridge_app_backend.orm.enums.base_enums import (
     ProductUnitEnum,
 )
 from fridge_app_backend.orm.models.db_models import Product
-
-config = get_settings()
 
 
 class ProductName(BaseModel):

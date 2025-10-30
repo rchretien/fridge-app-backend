@@ -13,10 +13,8 @@ from fastapi.responses import RedirectResponse
 
 from fridge_app_backend.api.routes.inventory_routes import inventory_router
 from fridge_app_backend.api.routes.utils_routes import utils_router
-from fridge_app_backend.config import get_settings
+from fridge_app_backend.config import config
 from fridge_app_backend.orm.database import initialise_db
-
-config = get_settings()
 
 logger = logging.getLogger(__name__)
 logger.info("Running COMMIT", extra={"commit": config.commit_sha})

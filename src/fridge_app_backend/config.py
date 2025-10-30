@@ -103,3 +103,6 @@ class Config(BaseSettings):
 def get_settings() -> Config:
     """Return the settings."""
     return Config()
+
+
+config = get_settings()

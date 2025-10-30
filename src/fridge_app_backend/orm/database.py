@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 
-from fridge_app_backend.config import get_settings
+from fridge_app_backend.config import config
 from fridge_app_backend.orm.models.db_models import (
     Base,
     ProductLocation,
@@ -17,7 +17,6 @@ from fridge_app_backend.orm.models.db_models import (
 )
 
 logger = logging.getLogger(__name__)
-config = get_settings()
 
 
 # Singleton engine object (connection pooling is applied for performance only in deployed mode)
