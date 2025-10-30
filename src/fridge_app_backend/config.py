@@ -1,62 +1,108 @@
 """Module containing API configuration variables."""
 
 import logging
-import os
+from functools import lru_cache
+from os import getenv
 from pathlib import Path
 
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pytz import timezone
 
-from fridge_app_backend.api.utils import get_env_var
 from fridge_app_backend.exceptions import BadDBTypeError, BadEnvironmentError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-# API specic variables
-API_NAME = "Fridge Inventory App Backend"
-API_DESCRIPTION = "CRUD API for managing a fridge inventory."
-API_VERSION = "0.1.0"
-BRUSSELS_TZ = timezone("Europe/Brussels")
-COMMIT_SHA = os.environ.get("COMMIT", None)
-
-
-# Environment specic variables
-AVAILABLE_ENVIRONMENTS = {"dev", "prod"}
+AVAILABLE_ENVIRONMENTS = {"local", "test", "dev", "prod"}
 DEPLOYED_ENVIRONMENTS = {"prod"}
-ENVIRONMENT = get_env_var("FRIDGE_APP_ENVIRONMENT", "dev")
-AVAILABLE_DB_TYPES = {"in_memory", "sqlite"}
-DB_TYPE = get_env_var("DB_TYPE", "in_memory")
+AVAILABLE_DB_TYPES = {"in_memory", "sqlite", "postgres"}
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Check that the environment is set correctly
-if ENVIRONMENT not in AVAILABLE_ENVIRONMENTS:
-    raise BadEnvironmentError(
-        current_environment=ENVIRONMENT, allowed_environments=AVAILABLE_ENVIRONMENTS
+
+class Config(BaseSettings):
+    """Configuration class for the API."""
+
+    model_config = SettingsConfigDict(
+        env_file=Path(f"{ROOT_DIR}/.env-{getenv('ENVIRONMENT', 'local')}")
     )
 
-# Check that the DB_TYPE is set correctly
-if DB_TYPE not in AVAILABLE_DB_TYPES:
-    raise BadDBTypeError(db_type=DB_TYPE, allowed_types=AVAILABLE_DB_TYPES)
+    # API specic variables
+    api_name: str = "Fridge Inventory App Backend"
+    api_description: str = "CRUD API for managing a fridge inventory."
+    api_version: str = "0.1.0"
+    brussels_tz_name: str = "Europe/Brussels"
+    commit_sha: str | None = None
 
-ENV_FILE = Path("~/.env").expanduser()
+    # Environment specific variables
+    environment: str = "local"
+    db_type: str = "in_memory"
+
+    # Postgres configuration (used only if db_type == "postgres")
+    db_user: str | None = None
+    db_password: str = ""
+    db_name: str | None = None
+    db_host: str | None = None
+    db_port: str | None = None
+
+    @field_validator("environment")
+    @classmethod
+    def validate_environment(cls, value: str) -> str:
+        """Validate the environment."""
+        if value not in AVAILABLE_ENVIRONMENTS:
+            raise BadEnvironmentError(
+                current_environment=value, allowed_environments=AVAILABLE_ENVIRONMENTS
+            )
+        return value
+
+    @field_validator("db_type")
+    @classmethod
+    def validate_db_type(cls, value: str) -> str:
+        """Validate db type."""
+        if value not in AVAILABLE_DB_TYPES:
+            raise BadDBTypeError(db_type=value, allowed_types=AVAILABLE_DB_TYPES)
+        return value
+
+    @property
+    def brussels_tz(self):
+        return timezone(self.brussels_tz_name)
+
+    # ---------------------------------------------
+    # 🔗 Database connection logic
+    # ---------------------------------------------
+    @property
+    def db_url(self) -> str:
+        """Return the correct database URL based on the db_type."""
+        if self.db_type == "in_memory":
+            return "sqlite:///:memory:"
+
+        if self.db_type == "sqlite":
+            db_path = Path("database.db")
+            if db_path.exists():
+                db_path.unlink()
+            return f"sqlite+pysqlite:///{db_path.absolute()}"
+
+        if self.db_type == "postgres":
+            password_part = f":{self.db_password}" if self.db_password else ""
+            return (
+                f"postgresql+psycopg2://{self.db_user}{password_part}@"
+                f"{self.db_host}:{self.db_port}/{self.db_name}"
+            )
+
+        raise BadDBTypeError(db_type=self.db_type, allowed_types=AVAILABLE_DB_TYPES)
+
+    @property
+    def db_conn_args(self) -> dict[str, str | bool]:
+        """Return the connection arguments for SQLAlchemy."""
+        if self.db_type.startswith("sqlite"):
+            return {"check_same_thread": False}
+        return {}
 
 
-def get_db_conn() -> str:
-    """Get the connection string for the database."""
-    if DB_TYPE == "in_memory":
-        return "sqlite:///:memory:"
-
-    db_path = Path("database.db")
-    if db_path.exists():
-        db_path.unlink()
-
-    return f"sqlite+pysqlite:///{db_path.absolute()}"
+@lru_cache
+def get_settings() -> Config:
+    """Return the settings."""
+    return Config()
 
 
-def get_db_conn_args() -> dict[str, str | bool]:
-    """Get the connection arguments for the database."""
-    return {"check_same_thread": False}
-
-
-# Set database connection string, arguments and type
-DB_CONN = get_db_conn()
-DB_CONNECTION_ARGS = get_db_conn_args()
+config = get_settings()

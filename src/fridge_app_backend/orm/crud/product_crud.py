@@ -6,7 +6,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from fridge_app_backend.config import BRUSSELS_TZ
+from fridge_app_backend.config import config
 from fridge_app_backend.orm.crud.base_crud import CRUDBase
 from fridge_app_backend.orm.models.db_models import Product, ProductLocation, ProductType
 from fridge_app_backend.orm.schemas.product_schemas import ProductCreate, ProductUpdate
@@ -15,14 +15,10 @@ from fridge_app_backend.orm.schemas.product_schemas import ProductCreate, Produc
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
     """CRUD operations for product model."""
 
-    def _collect_scalar_values(
-        self, obj_dict: dict[str, Any], session: Session
-    ) -> dict[str, Any]:
+    def _collect_scalar_values(self, obj_dict: dict[str, Any], session: Session) -> dict[str, Any]:
         """Resolve foreign keys and map external names to model column names."""
         product_type = (
-            session.query(ProductType)
-            .filter(ProductType.name == obj_dict["product_type"])
-            .first()
+            session.query(ProductType).filter(ProductType.name == obj_dict["product_type"]).first()
         )
         product_location = (
             session.query(ProductLocation)
@@ -45,7 +41,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         obj_dict = obj_in.model_dump(exclude_unset=True)
         scalar_values = self._collect_scalar_values(obj_dict, session)
         return Product(
-            creation_date=datetime.now(tz=BRUSSELS_TZ),
+            creation_date=datetime.now(tz=config.brussels_tz),
             image_location="file_path",
             **scalar_values,
         )

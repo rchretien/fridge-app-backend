@@ -13,17 +13,11 @@ from fastapi.responses import RedirectResponse
 
 from fridge_app_backend.api.routes.inventory_routes import inventory_router
 from fridge_app_backend.api.routes.utils_routes import utils_router
-from fridge_app_backend.config import (
-    API_DESCRIPTION,
-    API_NAME,
-    API_VERSION,
-    BRUSSELS_TZ,
-    COMMIT_SHA,
-)
+from fridge_app_backend.config import config
 from fridge_app_backend.orm.database import initialise_db
 
 logger = logging.getLogger(__name__)
-logger.info("Running COMMIT", extra={"commit": COMMIT_SHA})
+logger.info("Running COMMIT", extra={"commit": config.commit_sha})
 
 
 logging.basicConfig()
@@ -37,7 +31,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Initialize and close the database connection."""
     logger.info("API start up operations...")
     logger.info("Initialising DB...")
-    initialise_db()
+
+    if config.db_type == "in_memory":
+        initialise_db()
+    else:
+        raise NotImplementedError("Only in_memory sqlite supported for now")
 
     try:
         yield  # Yield control to the application
@@ -49,10 +47,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(
-    title=API_NAME,
-    description=API_DESCRIPTION,
-    started=datetime.now(tz=BRUSSELS_TZ),
-    version=API_VERSION,
+    title=f"{config.api_name} in {config.environment} environment with {config.db_type} database",
+    description=config.api_description,
+    started=datetime.now(tz=config.brussels_tz),
+    version=config.api_version,
     lifespan=lifespan,
 )
 
@@ -68,9 +66,9 @@ async def add_headers(request: Request, call_next: Callable[..., Any]) -> Respon
     Middleware to add extra headers to report the time required to execute
     an API call and several security headers.
     """
-    start_time = datetime.now(tz=BRUSSELS_TZ)
+    start_time = datetime.now(tz=config.brussels_tz)
     response: Response = await call_next(request)
-    process_time = datetime.now(tz=BRUSSELS_TZ) - start_time
+    process_time = datetime.now(tz=config.brussels_tz) - start_time
 
     # Inject security headers
     response.headers["X-Process-Time"] = str(process_time)
