@@ -1,5 +1,22 @@
 services:
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: fridge-app-postgres
+    env_file:
+      - .env-dev
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-fridge_dev}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - postgres
+
   devcontainer:
     build:
       target: dev
@@ -15,4 +32,5 @@ services:
 
 volumes:
   command-history-volume:
+  postgres_data:
 

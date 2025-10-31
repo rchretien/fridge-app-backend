@@ -3,6 +3,8 @@
 import logging
 from collections.abc import Generator
 
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool, StaticPool
@@ -73,6 +75,17 @@ def reset_db() -> None:
     with SessionLocal.begin() as session:
         init_product_location_table(session=session)
         init_product_type_table(session=session)
+
+
+def run_migrations() -> None:
+    """Run Alembic migrations for persistent databases."""
+    try:
+        logger.info("Running database migrations...")
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Database migrations completed successfully")
+    except Exception as e:
+        logger.error("Failed to run database migrations: %s", e)
 
 
 def get_session() -> Generator[Session]:
