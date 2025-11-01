@@ -102,7 +102,9 @@ class Config(BaseSettings):
         return {}
 
 
-def create_database_engine(db_type: str, environment: str, db_url: str, db_conn_args: dict) -> Engine:
+def create_database_engine(
+    db_type: str, environment: str, db_url: str, db_conn_args: dict
+) -> Engine:
     """Create and configure a SQLAlchemy engine based on database type and environment.
 
     This function centralises all engine/pool construction logic, making it the single
@@ -134,9 +136,7 @@ def create_database_engine(db_type: str, environment: str, db_url: str, db_conn_
     # File-based SQLite: Use NullPool to avoid locking issues
     if db_type == "sqlite":
         logger.debug("Using NullPool for SQLite file database")
-        return create_engine(
-            url=db_url, future=True, connect_args=db_conn_args, poolclass=NullPool
-        )
+        return create_engine(url=db_url, future=True, connect_args=db_conn_args, poolclass=NullPool)
 
     # PostgreSQL: Use connection pooling in production, NullPool otherwise
     if db_type == "postgres":
@@ -151,11 +151,8 @@ def create_database_engine(db_type: str, environment: str, db_url: str, db_conn_
                 pool_timeout=30,
                 pool_recycle=1800,
             )
-        else:
-            logger.debug("Using NullPool for non-production PostgreSQL")
-            return create_engine(
-                url=db_url, future=True, connect_args=db_conn_args, poolclass=NullPool
-            )
+        logger.debug("Using NullPool for non-production PostgreSQL")
+        return create_engine(url=db_url, future=True, connect_args=db_conn_args, poolclass=NullPool)
 
     # This should never be reached due to validation in Config class
     raise BadDBTypeError(db_type=db_type, allowed_types=AVAILABLE_DB_TYPES)
