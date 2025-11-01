@@ -1,7 +1,6 @@
 """Tests for configuration helpers."""
 
 from pathlib import Path
-from unittest import mock
 
 import pytest
 from sqlalchemy.pool import NullPool, StaticPool
@@ -52,10 +51,7 @@ def test_create_database_engine_unknown_type_raises() -> None:
     """Unsupported DB types should raise BadDBTypeError."""
     with pytest.raises(BadDBTypeError):
         create_database_engine(
-            db_type="unknown",
-            environment="local",
-            db_url="sqlite:///:memory:",
-            db_conn_args={},
+            db_type="unknown", environment="local", db_url="sqlite:///:memory:", db_conn_args={}
         )
 
 

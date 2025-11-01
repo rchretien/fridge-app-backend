@@ -9,7 +9,7 @@ from fridge_app_backend.api.app import app
 from fridge_app_backend.orm.database import reset_db
 
 
-@pytest.fixture()
+@pytest.fixture
 def client() -> Iterator[TestClient]:
     """Provide a TestClient instance with a clean database."""
     reset_db()

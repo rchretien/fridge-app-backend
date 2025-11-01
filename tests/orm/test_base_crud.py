@@ -9,7 +9,11 @@ from fridge_app_backend.config import config
 from fridge_app_backend.exceptions import ModelNotHavingAttributeError
 from fridge_app_backend.orm.crud.product_crud import CRUDProduct, product_crud
 from fridge_app_backend.orm.database import SessionLocal, reset_db
-from fridge_app_backend.orm.enums.base_enums import ProductLocationEnum, ProductTypeEnum, ProductUnitEnum
+from fridge_app_backend.orm.enums.base_enums import (
+    ProductLocationEnum,
+    ProductTypeEnum,
+    ProductUnitEnum,
+)
 from fridge_app_backend.orm.schemas.product_schemas import ProductCreate, ProductUpdate
 
 
@@ -47,9 +51,7 @@ def test_update_nonexistent_row_raises_no_result_found() -> None:
     try:
         with pytest.raises(NoResultFound):
             product_crud.update(
-                session=session,
-                row_id=999,
-                obj_in=ProductUpdate(description="irrelevant"),
+                session=session, row_id=999, obj_in=ProductUpdate(description="irrelevant")
             )
     finally:
         session.close()

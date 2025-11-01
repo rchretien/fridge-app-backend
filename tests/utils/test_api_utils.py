@@ -1,6 +1,5 @@
 """Tests for fridge_app_backend.api.utils."""
 
-import os
 from pathlib import Path
 
 import pytest

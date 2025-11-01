@@ -24,9 +24,7 @@ def _product_payload(**overrides: Any) -> dict[str, Any]:
         "description": "Juicy yellow peaches",
         "quantity": 3,
         "unit": ProductUnitEnum.BOXES.value,
-        "expiry_date": (
-            datetime.now(tz=config.brussels_tz) + timedelta(days=3)
-        ).isoformat(),
+        "expiry_date": (datetime.now(tz=config.brussels_tz) + timedelta(days=3)).isoformat(),
         "product_location": ProductLocationEnum.REFRIGERATOR.value,
         "product_type": ProductTypeEnum.FRUIT.value,
     }
@@ -85,13 +83,9 @@ def test_update_product_rejects_past_expiry(client: TestClient) -> None:
     assert create_response.status_code == httpx.codes.CREATED
     product_id = create_response.json()["product_id"]
 
-    invalid_expiry = (
-        datetime.now(tz=config.brussels_tz) - timedelta(days=1)
-    ).isoformat()
+    invalid_expiry = (datetime.now(tz=config.brussels_tz) - timedelta(days=1)).isoformat()
     update_response = client.patch(
-        "/inventory/update",
-        params={"product_id": product_id},
-        json={"expiry_date": invalid_expiry},
+        "/inventory/update", params={"product_id": product_id}, json={"expiry_date": invalid_expiry}
     )
 
     assert update_response.status_code == httpx.codes.BAD_REQUEST

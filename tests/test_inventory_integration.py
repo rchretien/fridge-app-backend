@@ -10,8 +10,8 @@ from fridge_app_backend.exceptions import InvalidProductTypeError
 from fridge_app_backend.orm.crud.product_crud import product_crud
 from fridge_app_backend.orm.database import SessionLocal, reset_db
 from fridge_app_backend.orm.enums.base_enums import (
-    ProductLocationEnum,
     OrderByEnum,
+    ProductLocationEnum,
     ProductTypeEnum,
     ProductUnitEnum,
 )
@@ -95,12 +95,10 @@ def test_get_names_starting_with_is_case_insensitive() -> None:
         }
 
         product_crud.create(
-            session=session,
-            obj_in=ProductCreate(product_name="Strawberry Jam", **base_payload),
+            session=session, obj_in=ProductCreate(product_name="Strawberry Jam", **base_payload)
         )
         product_crud.create(
-            session=session,
-            obj_in=ProductCreate(product_name="Stone Fruit Mix", **base_payload),
+            session=session, obj_in=ProductCreate(product_name="Stone Fruit Mix", **base_payload)
         )
 
         results_lower = product_crud.get_names_starting_with("st", session=session)
@@ -138,11 +136,7 @@ def test_get_multi_paginated_orders_and_offsets() -> None:
             )
 
         first_page = product_crud.get_multi_paginated(
-            session=session,
-            limit=2,
-            offset=0,
-            ascending=True,
-            order_by=OrderByEnum.NAME,
+            session=session, limit=2, offset=0, ascending=True, order_by=OrderByEnum.NAME
         )
 
         assert [product.name for product in first_page.data] == ["Apples", "Bananas"]
@@ -150,11 +144,7 @@ def test_get_multi_paginated_orders_and_offsets() -> None:
         assert first_page.offset == 0
 
         second_page = product_crud.get_multi_paginated(
-            session=session,
-            limit=2,
-            offset=2,
-            ascending=True,
-            order_by=OrderByEnum.NAME,
+            session=session, limit=2, offset=2, ascending=True, order_by=OrderByEnum.NAME
         )
 
         assert [product.name for product in second_page.data] == ["Carrots"]

@@ -23,9 +23,7 @@ def _product_payload(**overrides: Any) -> dict[str, Any]:
         "description": "Matured cheddar cheese",
         "quantity": 2,
         "unit": ProductUnitEnum.GRAM.value,
-        "expiry_date": (
-            datetime.now(tz=config.brussels_tz) + timedelta(days=30)
-        ).isoformat(),
+        "expiry_date": (datetime.now(tz=config.brussels_tz) + timedelta(days=30)).isoformat(),
         "product_location": ProductLocationEnum.REFRIGERATOR.value,
         "product_type": ProductTypeEnum.DAIRY.value,
     }
@@ -55,10 +53,7 @@ def test_inventory_end_to_end_flow(client: TestClient) -> None:
     update_response = client.patch(
         "/inventory/update",
         params={"product_id": cheddar_id},
-        json={
-            "quantity": 5,
-            "product_location": ProductLocationEnum.BIG_FREEZER.value,
-        },
+        json={"quantity": 5, "product_location": ProductLocationEnum.BIG_FREEZER.value},
     )
 
     assert update_response.status_code == httpx.codes.OK
@@ -67,8 +62,7 @@ def test_inventory_end_to_end_flow(client: TestClient) -> None:
     assert updated_payload["product_location"] == ProductLocationEnum.BIG_FREEZER.value
 
     list_response = client.get(
-        "/inventory/list",
-        params={"limit": 10, "ascending": True, "order_by": "name"},
+        "/inventory/list", params={"limit": 10, "ascending": True, "order_by": "name"}
     )
     assert list_response.status_code == httpx.codes.OK
     body = list_response.json()
@@ -89,11 +83,7 @@ def test_inventory_end_to_end_flow(client: TestClient) -> None:
 
 def test_update_unknown_product_returns_404(client: TestClient) -> None:
     """Attempting to update a non-existent product should return a 404 response."""
-    response = client.patch(
-        "/inventory/update",
-        params={"product_id": 999},
-        json={"quantity": 1},
-    )
+    response = client.patch("/inventory/update", params={"product_id": 999}, json={"quantity": 1})
 
     assert response.status_code == httpx.codes.NOT_FOUND
     assert response.json()["detail"] == "Product not found in the database."
