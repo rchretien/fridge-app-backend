@@ -61,8 +61,8 @@ class Product(BaseWithID):
     unit: Mapped[ProductUnitEnum] = mapped_column(
         Enum(ProductUnitEnum), default=ProductUnitEnum.GRAM, nullable=False
     )
-    creation_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    expiry_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    creation_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    expiry_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     image_location: Mapped[str] = mapped_column(String, nullable=True)
 
     # Relationship with the ProductType model (many-to-one)

@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Generator
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from fridge_app_backend.config import config, create_database_engine
@@ -40,9 +41,13 @@ def initialise_db() -> None:
 
     # Fill all default tables with initial/default data if they are empty
     with SessionLocal.begin() as session:
-        if not session.query(ProductType).count():
+        product_type_count = session.scalar(select(func.count()).select_from(ProductType)) or 0
+        if product_type_count == 0:
             init_product_type_table(session=session)
-        if not session.query(ProductLocation).count():
+        product_location_count = (
+            session.scalar(select(func.count()).select_from(ProductLocation)) or 0
+        )
+        if product_location_count == 0:
             init_product_location_table(session=session)
 
 

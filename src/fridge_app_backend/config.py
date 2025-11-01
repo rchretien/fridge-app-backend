@@ -97,7 +97,7 @@ class Config(BaseSettings):
     @property
     def db_conn_args(self) -> dict[str, str | bool]:
         """Return the connection arguments for SQLAlchemy."""
-        if self.db_type.startswith("sqlite"):
+        if self.db_type.startswith("sqlite") or self.db_type == "in_memory":
             return {"check_same_thread": False}
         return {}
 
