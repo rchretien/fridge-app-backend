@@ -4,7 +4,7 @@ import re
 from datetime import datetime, timedelta
 from typing import Self
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from fridge_app_backend.config import config
 from fridge_app_backend.exceptions import InvalidExpiryDateError
@@ -153,10 +153,7 @@ class ProductRead(ProductBase):
         description="Product image location on the server",
     )
 
-    class Config:
-        """Pydantic configuration."""
-
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def from_model(cls, model: Product) -> Self:
@@ -202,10 +199,7 @@ class ProductReadList(BaseModel):
         ge=0,
     )
 
-    class Config:
-        """Pydantic configuration."""
-
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def from_paginated_response(cls, paginated_response: PaginatedResponse[Product]) -> Self:
