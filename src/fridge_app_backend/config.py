@@ -40,7 +40,7 @@ class Config(BaseSettings):
 
     # Postgres configuration (used only if db_type == "postgres")
     db_user: str | None = None
-    db_password: str = ""
+    db_password: str | None = None
     db_name: str | None = None
     db_host: str | None = None
     db_port: str | None = None
@@ -83,9 +83,10 @@ class Config(BaseSettings):
             return f"sqlite+pysqlite:///{db_path.absolute()}"
 
         if self.db_type == "postgres":
-            password_part = f":{self.db_password}" if self.db_password else ""
+            if not self.db_password:
+                raise ValueError("Database password is required for PostgreSQL connections")
             return (
-                f"postgresql+psycopg2://{self.db_user}{password_part}@"
+                f"postgresql+psycopg2://{self.db_user}:{self.db_password}@"
                 f"{self.db_host}:{self.db_port}/{self.db_name}"
             )
 
