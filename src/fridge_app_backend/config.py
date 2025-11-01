@@ -8,6 +8,8 @@ from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pytz import timezone
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.pool import NullPool, StaticPool
 
 from fridge_app_backend.exceptions import BadDBTypeError, BadEnvironmentError
 
@@ -98,6 +100,65 @@ class Config(BaseSettings):
         if self.db_type.startswith("sqlite"):
             return {"check_same_thread": False}
         return {}
+
+
+def create_database_engine(db_type: str, environment: str, db_url: str, db_conn_args: dict) -> Engine:
+    """Create and configure a SQLAlchemy engine based on database type and environment.
+
+    This function centralises all engine/pool construction logic, making it the single
+    source of truth for database configuration. When adding new database types (e.g., Postgres),
+    modifications are localized to this function only.
+
+    Supported Combinations
+    ----------------------
+    - in_memory + any environment: Uses StaticPool (all connections share same in-memory DB)
+    - sqlite + any environment: Uses NullPool (avoids SQLite file locking issues)
+    - postgres + prod: Uses connection pooling (pool_size=20, max_overflow=10)
+    - postgres + dev/test/local: Uses NullPool (simpler, no pooling overhead)
+
+    Notes
+    -----
+    - StaticPool: Required for in-memory SQLite to maintain state across connections
+    - NullPool: Recommended for SQLite file databases and non-production environments
+    - Connection pooling: Only enabled in production for performance optimization
+    """
+    logger.info(f"Creating engine for db_type={db_type}, environment={environment}")
+
+    # In-memory SQLite: MUST use StaticPool to share state across connections
+    if db_type == "in_memory":
+        logger.debug("Using StaticPool for in-memory database")
+        return create_engine(
+            url=db_url, future=True, connect_args=db_conn_args, poolclass=StaticPool
+        )
+
+    # File-based SQLite: Use NullPool to avoid locking issues
+    if db_type == "sqlite":
+        logger.debug("Using NullPool for SQLite file database")
+        return create_engine(
+            url=db_url, future=True, connect_args=db_conn_args, poolclass=NullPool
+        )
+
+    # PostgreSQL: Use connection pooling in production, NullPool otherwise
+    if db_type == "postgres":
+        if environment in DEPLOYED_ENVIRONMENTS:
+            logger.info("Using connection pooling for production PostgreSQL")
+            return create_engine(
+                url=db_url,
+                future=True,
+                connect_args=db_conn_args,
+                pool_size=20,
+                max_overflow=10,
+                pool_timeout=30,
+                pool_recycle=1800,
+            )
+        else:
+            logger.debug("Using NullPool for non-production PostgreSQL")
+            return create_engine(
+                url=db_url, future=True, connect_args=db_conn_args, poolclass=NullPool
+            )
+
+    # This should never be reached due to validation in Config class
+    raise BadDBTypeError(db_type=db_type, allowed_types=AVAILABLE_DB_TYPES)
 
 
 @lru_cache

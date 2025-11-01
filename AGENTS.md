@@ -93,8 +93,11 @@ fridge-app-backend/
    - Pre-populated on database initialization
 
 ### Important Database Considerations
+- **Centralized Engine Creation**: All database engine/pool construction is handled by `create_database_engine()` in `config.py`
 - **In-Memory Mode**: Uses `StaticPool` to ensure all connections share the same database instance
 - **SQLite File Mode**: Uses `NullPool` for file-based databases
+- **PostgreSQL Production**: Uses connection pooling (pool_size=20, max_overflow=10) only in production environments
+- **PostgreSQL Non-Production**: Uses `NullPool` for simpler connection management
 - **Relationship Constraints**: Products have `single_parent=True` and `cascade="all, delete-orphan"` on relationships
 
 ---
@@ -104,26 +107,26 @@ fridge-app-backend/
 ### Running the Application
 ```bash
 # Development mode (with hot reload)
-uv poe api --dev
+uv run poe api --dev
 
 # Production mode
-uv poe api
+uv run poe api
 
 # Custom host/port
-uv poe api --host 0.0.0.0 --port 8080 --dev
+uv run poe api --host 0.0.0.0 --port 8080 --dev
 ```
 
 ### Testing
 ```bash
-uv poe test        # Run tests with coverage
-uv poe lint        # Run linters and formatters
+uv run poe test        # Run tests with coverage
+uv run poe lint        # Run linters and formatters
 ```
 
 ### Key Poe Tasks (defined in pyproject.toml)
-- `uv poe api`: Start the API server
-- `uv poe test`: Run test suite with coverage
-- `uv poe lint`: Run pre-commit hooks
-- `uv poe docs`: Build/serve documentation with MkDocs
+- `uv run poe api`: Start the API server
+- `uv run poe test`: Run test suite with coverage
+- `uv run poe lint`: Run pre-commit hooks
+- `uv run poe docs`: Build/serve documentation with MkDocs
 
 ---
 
@@ -147,9 +150,12 @@ API schemas use `product_name`, but database models use `name`. The CRUD layer h
 ## 🚨 Known Issues & Gotchas
 
 ### 1. Database Connection Pooling
+- **Centralized Configuration**: All engine creation logic is in `config.create_database_engine()`
 - **In-memory databases**: MUST use `StaticPool` to share state across connections
 - **File-based databases**: Use `NullPool` to avoid locking issues
-- Never hardcode engine creation after configuration—respect the config-driven approach
+- **PostgreSQL**: Uses connection pooling in production, `NullPool` in dev/test/local
+- Never hardcode engine creation—always use `create_database_engine()` helper
+- Adding new database types (e.g., Postgres) is a local change to `create_database_engine()` only
 
 ### 2. Product Update Operation
 The update operation had multiple issues (recently fixed):
@@ -162,6 +168,7 @@ The update operation had multiple issues (recently fixed):
 - Environment is determined by `ENVIRONMENT` env var (defaults to "local")
 - Config is cached with `@lru_cache` for performance
 - Access via `from fridge_app_backend.config import config`
+- **Engine Creation**: Use `create_database_engine()` from `config.py` for all database engine construction
 
 ### 4. Timezone Handling
 - All timestamps use Brussels timezone (`Europe/Brussels`)
@@ -298,7 +305,7 @@ For Postgres:
 ### When Refactoring
 1. Maintain backward compatibility with existing API endpoints
 2. Update tests to cover refactored code
-3. Run `uv poe lint` and `uv poe test` before committing
+3. Run `uv run poe lint` and `uv run poe test` before committing
 4. Update docstrings and type hints
 
 ### Code Review Checklist
@@ -306,8 +313,8 @@ For Postgres:
 - [ ] Docstrings in NumPy style
 - [ ] No hardcoded values—use config
 - [ ] Proper error handling
-- [ ] Tests pass (`uv poe test`)
-- [ ] Linting passes (`uv poe lint`)
+- [ ] Tests pass (`uv run poe test`)
+- [ ] Linting passes (`uv run poe lint`)
 - [ ] No SQLAlchemy relationship violations
 
 ---
