@@ -88,11 +88,7 @@ async def get_product_names_starting_with(
 async def update_product(
     product_id: int, validated_data: ValidatedProductUpdateDependency, session: SessionDependency
 ) -> ProductRead:
-    """Update a product.
-
-    The validation of update data against the existing product is handled
-    automatically by the ValidatedProductUpdateDependency.
-    """
+    """Update a product."""
     _, product_update = validated_data
     return ProductRead.from_model(
         product_crud.update(session=session, row_id=product_id, obj_in=product_update)
