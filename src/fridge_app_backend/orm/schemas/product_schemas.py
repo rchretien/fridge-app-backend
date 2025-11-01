@@ -125,34 +125,8 @@ class ProductUpdate(BaseModel):
         None, title="Product type", description="Product type"
     )
 
-    @field_validator("expiry_date")
-    @classmethod
-    def validate_expiry_date(cls, value: datetime | None) -> datetime | None:
-        """Validate that expiry date is in the future."""
-        if value is None:
-            return value
-
-        expiry_date = _ensure_brussels_timezone(value)
-        if expiry_date <= datetime.now(tz=config.brussels_tz):
-            raise ValueError("Expiry date must be in the future")
-        return expiry_date
-
     def validate_against_existing_product(self, existing_product: Product) -> None:
-        """Validate update data against existing product.
-
-        Performs cross-field validation that requires knowledge of the existing product:
-        - Ensures expiry_date is not earlier than the product's creation_date
-
-        Parameters
-        ----------
-        existing_product : Product
-            The existing product being updated
-
-        Raises
-        ------
-        ValueError
-            If validation fails
-        """
+        """Validate update data against existing product."""
         if self.expiry_date is not None:
             expiry_date = _ensure_brussels_timezone(self.expiry_date)
             creation_date = _ensure_brussels_timezone(existing_product.creation_date)
