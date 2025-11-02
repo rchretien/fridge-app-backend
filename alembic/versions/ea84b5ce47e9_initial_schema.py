@@ -11,6 +11,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
+from fridge_app_backend.orm.enums.base_enums import ProductLocationEnum, ProductTypeEnum
+
 # revision identifiers, used by Alembic.
 revision: str = "ea84b5ce47e9"
 down_revision: str | Sequence[str] | None = None
@@ -57,6 +59,16 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_product_id"), "product", ["id"], unique=False)
+
+    # Add seed data
+    # Insert product types
+    product_type_table = sa.table("product_type", sa.column("name", sa.String))
+    op.bulk_insert(product_type_table, [{"name": pt.value} for pt in ProductTypeEnum])
+
+    # Insert product locations
+    product_location_table = sa.table("product_location", sa.column("name", sa.String))
+    op.bulk_insert(product_location_table, [{"name": pl.value} for pl in ProductLocationEnum])
+
     # ### end Alembic commands ###
 
 
