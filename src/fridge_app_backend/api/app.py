@@ -34,8 +34,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
     if config.db_type == "in_memory":
         initialise_db()
+    elif config.db_type == "postgres":
+        logger.info("Using persistent postgres database.")
     else:
-        raise NotImplementedError("Only in_memory sqlite supported for now")
+        raise NotImplementedError("Only in_memory sqlite and postgres supported for now")
 
     try:
         yield  # Yield control to the application

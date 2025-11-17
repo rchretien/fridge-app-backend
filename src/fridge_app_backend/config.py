@@ -24,7 +24,9 @@ class Config(BaseSettings):
     """Configuration class for the API."""
 
     model_config = SettingsConfigDict(
-        env_file=Path(f"{ROOT_DIR}/.env-{getenv('ENVIRONMENT', 'local')}")
+        env_file=Path(f"{ROOT_DIR}/.env-{getenv('ENVIRONMENT', 'local')}"),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     # API specic variables

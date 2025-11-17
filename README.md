@@ -20,6 +20,63 @@ Within the Dev Container this is equivalent to:
 poe api
 ```
 
+## 💾 Development Setup with PostgreSQL
+
+This section explains how to set up a local development environment using Docker, PostgreSQL, and Alembic migrations for the Fridge Inventory App Backend.
+
+---
+
+### 1. Create a `.env-dev` file
+
+Create a file named `.env-dev` in the project root:
+
+```env
+# Environment
+ENVIRONMENT=dev
+DB_TYPE=postgres
+API_NAME=Fridge Inventory App Backend
+
+# Application DB config
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+DB_NAME=fridge_inventory_dev
+DB_HOST=localhost
+DB_PORT=5432
+
+# PostgreSQL container init variables
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=yourpassword
+POSTGRES_DB=fridge_inventory_dev
+```
+### 2. Start the PostgreSQL container
+
+```bash
+docker compose --env-file .env-dev --profile postgres up -d postgres
+```
+Verify the container is running:
+
+```bash
+docker ps
+```
+
+### 3. Verify the database connection
+
+From your host machine:
+```
+psql -h localhost -U postgres -d fridge_inventory_dev
+```
+### 4. Start the FastAPI app
+```
+ENVIRONMENT=dev uv run uvicorn fridge_app_backend.api.app:app --reload
+
+```
+The API will connect to the PostgreSQL database using the .env-dev configuration. Alembic will run the migration at api start up.
+
+### 5. Stop the database when finished
+```
+docker compose --profile postgres down`
+```
+
 ## Contributing
 
 <details>
