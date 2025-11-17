@@ -17,6 +17,7 @@ dependencies = [
   "gunicorn>=23.0.0",
   "joblib>=1.5.2",
   "poethepoet (>=0.32.1)",
+  "psycopg2-binary>=2.9.11",
   "pydantic>=2.12.3",
   "pydantic-settings>=2.11.0",
   "pytest>=8.4.2",
@@ -191,3 +192,7 @@ type = "simple"
 
     [[tool.poe.tasks.test.sequence]]
     cmd = "coverage xml"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fridge_app_backend"]
+

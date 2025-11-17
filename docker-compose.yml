@@ -1,7 +1,7 @@
 services:
 
   postgres:
-    image: postgres:18-alpine
+    image: postgres:16-alpine
     container_name: fridge-app-postgres
     env_file:
       - .env-dev
@@ -17,12 +17,32 @@ services:
     profiles:
       - postgres
 
+  # FastAPI application
+  api:
+    build:
+      context: .
+      dockerfile: ./src/fridge_app_backend/Dockerfile
+    container_name: fridge-app-api
+    env_file:
+      - .env-dev
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - dev
+    command: >
+      uv run uvicorn fridge_app_backend.api.app:app --host 0.0.0.0 --port 8000
+
   devcontainer:
     build:
       target: dev
     volumes:
       - ..:/workspaces
       - command-history-volume:/home/user/.history/
+    profiles:
+      - devcontainer
 
   app:
     build:
