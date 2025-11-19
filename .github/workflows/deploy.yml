@@ -46,6 +46,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./src/fridge_app_backend/Dockerfile
           push: true
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ github.repository }}:${{ github.event.inputs.environment || env.DEFAULT_DEPLOYMENT_ENVIRONMENT }}
