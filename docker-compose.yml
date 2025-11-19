@@ -33,7 +33,7 @@ services:
     profiles:
       - dev
     command: >
-      uv run uvicorn fridge_app_backend.api.app:app --host 0.0.0.0 --port 8000
+      uv run uvicorn fridge_app_backend.api.app:app --host 0.0.0.0 --port 8000  --root-path /backend
 
   nginx:
     image: nginx:alpine
