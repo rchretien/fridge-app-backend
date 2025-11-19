@@ -51,4 +51,4 @@ jobs:
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ github.repository }}:${{ github.event.inputs.environment || env.DEFAULT_DEPLOYMENT_ENVIRONMENT }}
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ github.repository }}:${{ env.GIT_TAG }}
-          target: app
+          #target: app
