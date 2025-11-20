@@ -49,6 +49,6 @@ jobs:
           file: ./src/fridge_app_backend/Dockerfile
           push: true
           tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ github.event.inputs.environment || env.DEFAULT_DEPLOYMENT_ENVIRONMENT }}
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ env.GIT_TAG }}
-          #target: app
+            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.event.inputs.environment || env.DEFAULT_DEPLOYMENT_ENVIRONMENT }}
+            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.GIT_TAG }}
+          # target: app
