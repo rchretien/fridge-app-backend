@@ -42,9 +42,17 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
+            # tag based on semver tag (v1.2.3 -> 1.2.3, 1.2, 1)
+            type=semver,pattern={{version}},value=${{ github.ref_name }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ github.ref_name }}
+            type=semver,pattern={{major}},value=${{ github.ref_name }}
+            
+            # latest tag for the most recent release
+            type=raw,value=latest
+            
+            # always tag by commit sha
             type=sha
+      
 
       - name: Build and push Docker image
         id: push
