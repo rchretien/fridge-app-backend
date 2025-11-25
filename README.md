@@ -74,7 +74,7 @@ The API will connect to the PostgreSQL database using the .env-dev configuration
 
 ### 5. Stop the database when finished
 ```
-docker compose --profile postgres down`
+docker compose --profile postgres down
 ```
 
 ## 🛠️ Automatic Deployment with Watchtower
