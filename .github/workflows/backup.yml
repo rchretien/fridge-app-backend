@@ -1,6 +1,9 @@
 name: 'Daily Supabase Backup'
 
 on:
+  push:
+    branches:
+      - feature-backup-database
   schedule:
     # Runs daily at 2:00 AM UTC (adjust to your preferred time)
     - cron: '0 2 * * *'
