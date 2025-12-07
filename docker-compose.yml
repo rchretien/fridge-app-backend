@@ -3,8 +3,6 @@ services:
   postgres:
     image: postgres:18-alpine
     container_name: fridge-app-postgres
-    env_file:
-      - .env-dev
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
