@@ -1,4 +1,6 @@
 name: 'Daily Supabase Backup'
+permissions:
+  contents: read
 
 on:
   schedule:
