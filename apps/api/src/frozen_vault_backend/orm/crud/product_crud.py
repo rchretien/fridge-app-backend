@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from frozen_vault_backend.config import config
 from frozen_vault_backend.exceptions import InvalidProductLocationError, InvalidProductTypeError
+from frozen_vault_backend.orm.constants import PRODUCT_TYPE_CATEGORY
 from frozen_vault_backend.orm.crud.base_crud import CRUDBase, PaginatedResponse
 from frozen_vault_backend.orm.enums.base_enums import (
     OrderByEnum,
@@ -200,7 +201,9 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         ).all()
 
         for product_id, name, quantity, unit, expiry_date, product_type, location in rows:
-            type_value = ProductTypeEnum(product_type).value
+            detailed_type = ProductTypeEnum(product_type)
+            type_value = detailed_type.value
+            category_value = PRODUCT_TYPE_CATEGORY.get(detailed_type, detailed_type).value
             location_value = ProductLocationEnum(location).value
             cleaned_name = " ".join(name.split())
             normalised_name = _normalise_analytics_name(name)
@@ -224,9 +227,9 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                     summary["bottles"] += quantity
 
                 type_summary = type_totals[scope_key].setdefault(
-                    type_value,
+                    category_value,
                     {
-                        "type": type_value,
+                        "type": category_value,
                         "entry_count": 0,
                         "weight_g": 0,
                         "boxes": 0,

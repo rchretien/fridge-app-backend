@@ -84,6 +84,38 @@ def test_create_preparation_product_uses_120_day_quality_window(client: TestClie
 @pytest.mark.parametrize(
     ("product_type", "storage_days"),
     [
+        ("pork 🐖", 270),
+        ("chicken 🍗", 270),
+        ("turkey 🦃", 270),
+        ("beef 🥩", 270),
+        ("salmon trout 🐟", 180),
+        ("saithe 🐟", 180),
+        ("nile perch 🐟", 180),
+        ("salmon 🐟", 180),
+        ("redfish 🐟", 180),
+        ("whiting 🐟", 180),
+    ],
+)
+def test_detailed_product_types_use_broad_category_quality_window(
+    client: TestClient, product_type: str, storage_days: int
+) -> None:
+    """Detailed meat and fish types should reuse broad category storage guidance."""
+    create_response = client.post(
+        "/inventory/create",
+        json=_product_payload(product_name=product_type, product_type=product_type),
+    )
+
+    assert create_response.status_code == httpx.codes.CREATED
+    product = client.get("/inventory/list").json()["products"][0]
+    creation_date = datetime.fromisoformat(product["creation_date"])
+    best_quality_until = datetime.fromisoformat(product["best_quality_until"])
+    assert product["product_type"] == product_type
+    assert best_quality_until == creation_date + timedelta(days=storage_days)
+
+
+@pytest.mark.parametrize(
+    ("product_type", "storage_days"),
+    [
         (ProductTypeEnum.POULTRY, 270),
         (ProductTypeEnum.MEAT, 270),
         (ProductTypeEnum.FISH, 180),

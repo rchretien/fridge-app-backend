@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from frozen_vault_backend.config import config
 from frozen_vault_backend.exceptions import InvalidExpiryDateError
-from frozen_vault_backend.orm.constants import FREEZER_STORAGE_DAYS
+from frozen_vault_backend.orm.constants import FREEZER_STORAGE_DAYS, PRODUCT_TYPE_CATEGORY
 from frozen_vault_backend.orm.crud.base_crud import PaginatedResponse
 from frozen_vault_backend.orm.enums.base_enums import (
     ProductLocationEnum,
@@ -49,9 +49,9 @@ def calculate_best_quality_until(
     *, creation_date: datetime, product_type: ProductTypeEnum
 ) -> datetime:
     """Return category quality guidance from the date the product was stored."""
+    category = PRODUCT_TYPE_CATEGORY.get(product_type, product_type)
     return config.brussels_tz.normalize(
-        _ensure_brussels_timezone(creation_date)
-        + timedelta(days=FREEZER_STORAGE_DAYS[product_type])
+        _ensure_brussels_timezone(creation_date) + timedelta(days=FREEZER_STORAGE_DAYS[category])
     )
 
 

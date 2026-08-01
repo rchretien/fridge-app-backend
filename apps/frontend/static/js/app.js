@@ -14,6 +14,72 @@ const AUTOCOMPLETE_DELAY = 200;
 let autocompleteTimer = null;
 let autocompleteRequest = null;
 
+const PRODUCT_TYPE_ALIASES = {
+  pork: ["porc"],
+  chicken: ["poulet"],
+  turkey: ["dinde"],
+  beef: ["boeuf", "bœuf"],
+  "salmon trout": ["truite saumonée"],
+  saithe: ["lieu noir"],
+  "nile perch": ["perche du nil"],
+  salmon: ["saumon"],
+  redfish: ["sébaste"],
+  whiting: ["merlan"],
+};
+
+function normalizeProductTypeTerm(value) {
+  return value
+    .normalize("NFKD")
+    .toLocaleLowerCase()
+    .replace(/\p{M}/gu, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+function findInferredProductType(input, select) {
+  const productName = ` ${normalizeProductTypeTerm(input.value)} `;
+  const matches = [...select.options]
+    .map((option) => {
+      const label = normalizeProductTypeTerm(option.textContent);
+      const term = [label, ...(PRODUCT_TYPE_ALIASES[label] ?? [])]
+        .map(normalizeProductTypeTerm)
+        .filter((term) => productName.includes(` ${term} `))
+        .sort((left, right) => right.length - left.length)[0];
+      return term ? { option, term } : null;
+    })
+    .filter(Boolean)
+    .sort((left, right) => right.term.length - left.term.length);
+
+  const isAmbiguous =
+    matches.length > 1 &&
+    matches[1].term.length === matches[0].term.length &&
+    matches[1].option !== matches[0].option;
+  if (!matches.length || isAmbiguous) {
+    return null;
+  }
+  return matches[0].option;
+}
+
+function inferProductType(input) {
+  const select = input.form?.elements.namedItem("product_type");
+  if (!(select instanceof HTMLSelectElement) || select.dataset.userSelected === "true") {
+    return;
+  }
+
+  select.dataset.defaultValue ??= select.value;
+  const option = findInferredProductType(input, select);
+  if (!option && select.dataset.inferred !== "true") {
+    return;
+  }
+
+  select.value = option?.value ?? select.dataset.defaultValue;
+  select.dataset.inferred = String(Boolean(option));
+  const status = input.form.querySelector("[data-product-type-inference-status]");
+  if (status) {
+    status.textContent = option ? `Suggested from product name: ${option.textContent}` : "";
+  }
+}
+
 function getProductNameSuggestions(input) {
   return document.getElementById(input.getAttribute("aria-controls"));
 }
@@ -31,6 +97,9 @@ function closeProductNameSuggestions(input) {
 function selectProductName(input, option) {
   input.value = option.dataset.productName;
   closeProductNameSuggestions(input);
+  if (input.matches("[data-infer-product-type]")) {
+    inferProductType(input);
+  }
   input.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
@@ -59,6 +128,10 @@ document.addEventListener("input", (event) => {
   const input = event.target;
   if (!(input instanceof HTMLInputElement) || !input.matches("[data-product-name-autocomplete]")) {
     return;
+  }
+
+  if (input.matches("[data-infer-product-type]")) {
+    inferProductType(input);
   }
 
   window.clearTimeout(autocompleteTimer);
@@ -98,6 +171,22 @@ document.addEventListener("input", (event) => {
       }
     }
   }, AUTOCOMPLETE_DELAY);
+});
+
+document.addEventListener("change", (event) => {
+  const select = event.target;
+  if (!(select instanceof HTMLSelectElement) || select.name !== "product_type") {
+    return;
+  }
+
+  const input = select.form?.querySelector("[data-infer-product-type]");
+  if (input) {
+    select.dataset.userSelected = "true";
+    const status = select.form.querySelector("[data-product-type-inference-status]");
+    if (status) {
+      status.textContent = "";
+    }
+  }
 });
 
 document.addEventListener("keydown", (event) => {

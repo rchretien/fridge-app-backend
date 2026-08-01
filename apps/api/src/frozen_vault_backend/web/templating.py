@@ -7,6 +7,8 @@ from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 
 from frozen_vault_backend.config import ROOT_DIR, config
+from frozen_vault_backend.orm.constants import PRODUCT_TYPE_CATEGORY
+from frozen_vault_backend.orm.enums.base_enums import ProductTypeEnum
 
 FRONTEND_DIR = ROOT_DIR.parent / "frontend"
 STATIC_DIR = FRONTEND_DIR / "static"
@@ -75,9 +77,14 @@ _PRODUCT_TYPE_VISUALS: dict[str, dict[str, str]] = {
 def product_type_visual(value: Any) -> dict[str, str]:
     """Return the icon, tone, and simplified label for a product type."""
     raw_value = getattr(value, "value", value)
-    return _PRODUCT_TYPE_VISUALS.get(
-        str(raw_value), {"icon": "box", "tone": "neutral", "label": str(raw_value).title()}
-    )
+    try:
+        product_type = ProductTypeEnum(raw_value)
+    except ValueError:
+        return {"icon": "box", "tone": "neutral", "label": str(raw_value).title()}
+
+    category = PRODUCT_TYPE_CATEGORY.get(product_type, product_type)
+    visual = _PRODUCT_TYPE_VISUALS.get(category.value, {"icon": "box", "tone": "neutral"})
+    return {**visual, "label": product_type.value.rsplit(" ", maxsplit=1)[0].title()}
 
 
 def product_location_label(value: Any) -> str:

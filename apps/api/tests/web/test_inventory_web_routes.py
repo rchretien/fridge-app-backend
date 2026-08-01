@@ -190,6 +190,39 @@ def test_freezer_analytics_page_renders_scoped_unit_safe_charts(client: TestClie
     assert "300 g" in refrigerator_response.text
 
 
+def test_freezer_analytics_groups_detailed_types_under_broad_categories(client: TestClient) -> None:
+    """Detailed selections should remain visible while category totals stay broad."""
+    detailed_types = {
+        "Pork ribs": "pork 🐖",
+        "Beef roast": "beef 🥩",
+        "Chicken breast": "chicken 🍗",
+        "Salmon fillet": "salmon 🐟",
+        "Saithe fillet": "saithe 🐟",
+    }
+    for product_name, product_type in detailed_types.items():
+        _create_product_through_api(
+            client,
+            product_name,
+            ProductLocationEnum.BIG_FREEZER.value,
+            quantity=100,
+            unit=ProductUnitEnum.GRAM.value,
+            product_type=product_type,
+        )
+
+    response = client.get("/web/analytics")
+
+    assert response.status_code == httpx.codes.OK
+    assert "3 categories" in response.text
+    assert "Meat" in response.text
+    assert "Poultry" in response.text
+    assert "Fish" in response.text
+    assert "Pork" in response.text
+    assert "Beef" in response.text
+    assert "Chicken" in response.text
+    assert "Salmon" in response.text
+    assert "Saithe" in response.text
+
+
 def test_home_page_uses_path_only_local_urls(client: TestClient) -> None:
     """Local assets and links should not emit absolute HTTP URLs behind HTTPS proxies."""
     response = client.get("/")
@@ -415,6 +448,8 @@ def test_new_product_page_renders_form(client: TestClient) -> None:
     assert "Create product" in response.text
     assert 'name="product_name"' in response.text
     assert "data-product-name-autocomplete" in response.text
+    assert "data-infer-product-type" in response.text
+    assert "data-product-type-inference-status" in response.text
     assert 'data-autocomplete-url="/inventory/startswith"' in response.text
     assert 'aria-autocomplete="list"' in response.text
     assert 'class="product-name-suggestions" role="listbox" hidden' in response.text
@@ -422,6 +457,19 @@ def test_new_product_page_renders_form(client: TestClient) -> None:
     assert 'type="time"' not in response.text
     assert 'value="preparations 🍲"' in response.text
     assert '<option value="meat 🥩" selected>meat 🥩</option>' in response.text
+    for product_type in (
+        "pork 🐖",
+        "chicken 🍗",
+        "turkey 🦃",
+        "beef 🥩",
+        "salmon trout 🐟",
+        "saithe 🐟",
+        "nile perch 🐟",
+        "salmon 🐟",
+        "redfish 🐟",
+        "whiting 🐟",
+    ):
+        assert f'value="{product_type}"' in response.text
 
 
 def test_create_product_page_creates_product_and_shows_flash(client: TestClient) -> None:
@@ -530,6 +578,7 @@ def test_edit_product_page_renders_existing_values(client: TestClient) -> None:
     assert "Edit Blueberries" in response.text
     assert 'value="Blueberries"' in response.text
     assert "data-product-name-autocomplete" in response.text
+    assert "data-infer-product-type" not in response.text
     assert 'class="product-name-suggestions" role="listbox" hidden' in response.text
     assert 'name="expiry_date_date" type="date"' in response.text
     assert "disabled" in response.text
